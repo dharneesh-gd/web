@@ -1,0 +1,2618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Fine Graphics</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #f8f9fa;
+      color: #333;
+    }
+
+    /* Header */
+    .admin-header {
+      background: linear-gradient(135deg, #343a40, #495057);
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .admin-header h1 {
+      font-size: 24px;
+    }
+
+    .admin-nav {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .nav-btn {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .logout-btn {
+      background: #dc3545;
+    }
+
+    .logout-btn:hover {
+      background: #c82333;
+    }
+
+    .user-info {
+      color: #ffc107;
+      font-weight: bold;
+    }
+
+    /* Customer Details Layout - UPDATED */
+    .customer-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .detail-item {
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 3px solid #007bff;
+    }
+
+    /* Add this to your CSS */
+    .detail-item[style*="grid-column: 1 / -1"] {
+      grid-column: 1 / -1;
+    }
+
+    .detail-item label {
+      font-weight: bold;
+      color: #495057;
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-item div {
+      color: #343a40;
+      font-size: 14px;
+      word-break: break-word;
+      line-height: 1.4;
+    }
+
+    /* Multiple Image Upload Styles */
+    .multiple-image-upload {
+      margin-bottom: 15px;
+    }
+
+    .image-preview-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .image-preview-item {
+      position: relative;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 5px;
+      background: white;
+    }
+
+    .image-preview-item img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .remove-image-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .add-image-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Tags Input Styles */
+    .tags-input-container {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 8px;
+      background: white;
+      min-height: 44px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .tag-item {
+      background: #007bff;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 15px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .tag-remove {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .tags-input {
+      border: none;
+      outline: none;
+      flex: 1;
+      min-width: 100px;
+      padding: 5px;
+    }
+
+    .tags-input::placeholder {
+      color: #6c757d;
+    }
+
+    /* Design Card Updates */
+    .design-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin: 10px 0;
+    }
+
+    .design-tag {
+      background: #e9ecef;
+      color: #495057;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+    }
+
+    .design-image-gallery {
+      position: relative;
+      margin-bottom: 15px;
+    }
+
+    .main-design-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .design-thumbnails {
+      display: flex;
+      gap: 5px;
+      margin-top: 8px;
+      overflow-x: auto;
+    }
+
+    .design-thumbnail {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .design-thumbnail.active {
+      border-color: #007bff;
+    }
+
+    /* Search and Filter Styles */
+    .design-filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-input {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      min-width: 250px;
+      
+    }
+    @keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+    .detail-item label {
+      font-weight: bold;
+      color: #495057;
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-item div {
+      color: #343a40;
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    /* Make address span full width */
+    .detail-item[style*="grid-column: 1 / -1"] {
+      grid-column: 1 / -1;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .customer-details {
+        grid-template-columns: 1fr;
+      }
+      
+      .detail-item[style*="grid-column: 1 / -1"] {
+        grid-column: 1;
+      }
+    }
+    /* Main Layout */
+    .admin-container {
+      display: flex;
+      min-height: calc(100vh - 70px);
+    }
+
+    /* Sidebar */
+    .admin-sidebar {
+      width: 250px;
+      background: white;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      padding: 20px 0;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+    }
+
+    .menu-item {
+      padding: 15px 25px;
+      cursor: pointer;
+      border-left: 4px solid transparent;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .menu-item:hover {
+      background: #f8f9fa;
+      border-left-color: #007bff;
+    }
+
+    .menu-item.active {
+      background: #e3f2fd;
+      border-left-color: #007bff;
+      color: #007bff;
+      font-weight: bold;
+    }
+
+    /* Main Content */
+    .admin-main {
+      flex: 1;
+      padding: 30px;
+      background: #f8f9fa;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+      border-left: 4px solid #007bff;
+    }
+
+    .stat-card h3 {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .stat-card .number {
+      font-size: 32px;
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    /* Content Sections */
+    .content-section {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 25px;
+      margin-bottom: 25px;
+      display: none;
+    }
+
+    .content-section.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f8f9fa;
+    }
+
+    .section-header h2 {
+      color: #343a40;
+    }
+    /* Order Actions */
+.order-actions {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.status-select {
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 12px;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-ordered { background: #e2e3e5; color: #383d41; }
+.status-pending { background: #fff3cd; color: #856404; }
+.status-processing { background: #cce7ff; color: #004085; }
+.status-completed { background: #d4edda; color: #155724; }
+
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .data-table th {
+      background: #f8f9fa;
+      font-weight: bold;
+      color: #495057;
+    }
+
+    .data-table tr:hover {
+      background: #f8f9fa;
+    }
+
+    .action-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 0 2px;
+      font-size: 12px;
+    }
+
+    .edit-btn {
+      background: #ffc107;
+      color: black;
+    }
+
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+    }
+
+    .view-btn {
+      background: #17a2b8;
+      color: white;
+    }
+
+    .customer-btn {
+      background: #28a745;
+      color: white;
+    }
+
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-completed { background: #d4edda; color: #155724; }
+    .status-processing { background: #cce7ff; color: #004085; }
+    .status-ordered { background: #e2e3e5; color: #383d41; }
+
+    /* Design Cards */
+    .designs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .design-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+
+    .design-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .design-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .design-name {
+      font-size: 18px;
+      font-weight: bold;
+      color: #343a40;
+      margin-bottom: 5px;
+    }
+
+    .design-category {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .design-price {
+      color: #007bff;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .design-description {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.4;
+      margin-bottom: 15px;
+    }
+
+    .design-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Customer Details Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .customer-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .detail-item {
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 5px;
+    }
+
+    .detail-item label {
+      font-weight: bold;
+      color: #495057;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    /* Order Items */
+    .order-items {
+      margin-top: 20px;
+    }
+
+    .order-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: #f8f9fa;
+    }
+
+    .order-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-right: 15px;
+    }
+
+    .order-item-details {
+      flex: 1;
+    }
+
+    .order-item-details h4 {
+      margin: 0 0 5px 0;
+      color: #343a40;
+    }
+
+    .order-item-details p {
+      margin: 2px 0;
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .error {
+      text-align: center;
+      padding: 20px;
+      color: #dc3545;
+      background: #f8d7da;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+
+    /* Order Actions */
+    .order-actions {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .status-select {
+      padding: 6px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    /* Customer Orders Section */
+    .customer-orders {
+      margin-top: 20px;
+    }
+
+    .orders-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .orders-table th,
+    .orders-table td {
+      padding: 10px;
+      border: 1px solid #e9ecef;
+      text-align: left;
+    }
+
+    .orders-table th {
+      background: #f8f9fa;
+      font-weight: bold;
+    }
+
+    /* Login Required */
+    .login-required {
+      text-align: center;
+      padding: 50px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .login-required h2 {
+      color: #dc3545;
+      margin-bottom: 20px;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #495057;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .admin-container {
+        flex-direction: column;
+      }
+
+      .admin-sidebar {
+        width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .customer-details {
+        grid-template-columns: 1fr;
+      }
+
+      .section-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .order-item {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .order-item img {
+        margin-right: 0;
+        margin-bottom: 10px;
+      }
+
+      .designs-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="admin-header">
+    <h1>👑 Fine Graphics - Admin Panel</h1>
+    <div class="admin-nav">
+      <span class="user-info" id="adminUserInfo">Admin User</span>
+      <button class="nav-btn" onclick="refreshData()">🔄 Refresh</button>
+      <button class="nav-btn logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="admin-container">
+    <!-- Sidebar -->
+    <nav class="admin-sidebar">
+      <ul class="sidebar-menu">
+        <li class="menu-item active" data-section="dashboard">
+          📊 Dashboard
+        </li>
+        <li class="menu-item" data-section="orders">
+          📦 Orders Management
+        </li>
+        <li class="menu-item" data-section="customers">
+          👥 Customer Management
+        </li>
+        <li class="menu-item" data-section="designs">
+          🎨 Design Management
+        </li>
+        <li class="menu-item" data-section="analytics">
+          📈 Sales Analytics
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <!-- Login Required Message -->
+      <div id="loginRequired" class="login-required" style="display: none;">
+        <h2>🔒 Admin Access Required</h2>
+        <p>You need to login as an administrator to access this panel.</p>
+        <button class="nav-btn" onclick="goToAdminLogin()" style="margin-top: 20px;">🔑 Go to Admin Login</button>
+      </div>
+
+      <!-- Dashboard Section -->
+      <section id="dashboard" class="content-section active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Total Customers</h3>
+            <div class="number" id="totalUsers">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Total Orders</h3>
+            <div class="number" id="totalOrders">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Pending Orders</h3>
+            <div class="number" id="pendingOrders">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <div class="number" id="totalRevenue">₹0</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <h2>Recent Orders</h2>
+        </div>
+        <div id="recentOrders" class="loading">
+          Loading recent orders...
+        </div>
+      </section>
+
+      <!-- Orders Management Section -->
+      <!-- Orders Management Section -->
+<!-- Orders Management Section -->
+<section id="orders" class="content-section">
+    <div class="section-header">
+        <h2>📦 Orders Management</h2>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="statusFilter" onchange="filterOrders()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer;">
+                <option value="all">📋 All Orders</option>
+                <option value="Pending">⏳ Pending</option>
+                <option value="Processing">🔄 Processing</option>
+                <option value="Completed">✅ Completed</option>
+                <option value="Ordered">📥 Ordered</option>
+            </select>
+            <button class="nav-btn" onclick="loadOrdersData()" style="background: #17a2b8;">🔄 Refresh</button>
+        </div>
+    </div>
+
+    <!-- Orders Summary Cards -->
+    <div class="orders-summary-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
+        <div class="summary-card" style="background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div class="summary-number" style="font-size: 32px; font-weight: bold;">0</div>
+            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Total Orders</div>
+        </div>
+        <div class="summary-card" style="background: linear-gradient(135deg, #28a745, #1e7e34); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div class="summary-number" style="font-size: 32px; font-weight: bold;">0</div>
+            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Completed</div>
+        </div>
+        <div class="summary-card" style="background: linear-gradient(135deg, #ffc107, #e0a800); color: black; padding: 20px; border-radius: 10px; text-align: center;">
+            <div class="summary-number" style="font-size: 32px; font-weight: bold;">0</div>
+            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Pending</div>
+        </div>
+        <div class="summary-card" style="background: linear-gradient(135deg, #6c757d, #545b62); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div class="summary-number" style="font-size: 32px; font-weight: bold;">₹0</div>
+            <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Total Revenue</div>
+        </div>
+    </div>
+
+    <div id="ordersTableContainer" class="loading">
+        Loading orders data...
+    </div>
+</section>
+
+      <!-- Customer Management Section -->
+      <section id="customers" class="content-section">
+        <div class="section-header">
+          <h2>👥 Customer Management</h2>
+          <button class="nav-btn" onclick="forceInitDesignsDatabase()" style="background: #dc3545; margin-right: 10px;">
+    🔄 FORCE INIT DB
+</button>
+        </div>
+        <div id="customersTableContainer" class="loading">
+          Loading customers data...
+        </div>
+      </section>
+
+      <!-- Design Management Section -->
+      <section id="designs" class="content-section">
+        <div class="section-header">
+    <h2>🎨 Design Management</h2>
+    <div>
+        <input 
+            type="text" 
+            id="designSearch" 
+            placeholder="🔍 Search by name or tags..." 
+            style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; width: 250px; margin-right: 10px;"
+            onkeyup="searchDesigns()"
+        >
+        <button class="nav-btn" onclick="showAddDesignModal()">➕ Add New Design</button>
+    </div>
+</div>
+        <div id="designsTableContainer" class="loading">
+          Loading designs data...
+        </div>
+      </section>
+
+      <!-- Analytics Section -->
+      <section id="analytics" class="content-section">
+        <div class="section-header">
+          <h2>📈 Sales Analytics</h2>
+        </div>
+        <div id="analyticsContent" class="loading">
+          Loading analytics data...
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Customer Details Modal -->
+  <div id="customerModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>👤 Customer Details & Orders</h3>
+        <button class="close-btn" onclick="closeModal('customerModal')">&times;</button>
+      </div>
+      <div id="customerDetailsContent">
+        <!-- Customer details will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Orders Modal -->
+  <div id="customerOrdersModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📦 Customer Orders</h3>
+        <button class="close-btn" onclick="closeModal('customerOrdersModal')">&times;</button>
+      </div>
+      <div id="customerOrdersContent">
+        <!-- Customer orders will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Design Modal -->
+  <div id="designModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3 id="designModalTitle">🎨 Add New Design</h3>
+        <button class="close-btn" onclick="closeModal('designModal')">&times;</button>
+      </div>
+      <div id="designModalContent">
+        <form id="designForm" onsubmit="saveDesign(event)">
+          <div style="display: grid; gap: 20px;">
+            <!-- Basic Information -->
+            <div class="form-group">
+              <label for="designName">Design Name *</label>
+              <input type="text" id="designName" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="designPrice">Price (₹) *</label>
+              <input type="number" id="designPrice" class="form-control" step="0.01" min="0" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="designDescription">Description *</label>
+              <textarea id="designDescription" class="form-control" rows="3" placeholder="Describe the design..." required></textarea>
+            </div>
+            
+            <!-- Single Image Upload -->
+            <div class="form-group">
+              <label>Design Image *</label>
+              <div class="multiple-image-upload">
+                <input type="file" id="designImages" class="form-control" accept="image/*" onchange="handleImageSelection(this)" required>
+                <small style="color: #666;">Select one image for the design.</small>
+                
+                <div id="imagePreviewContainer" class="image-preview-container">
+                  <!-- Image preview will be added here -->
+                </div>
+              </div>
+            </div>
+            
+            <!-- Tags Input -->
+            <div class="form-group">
+              <label for="designTags">Tags</label>
+              <div class="tags-input-container">
+                <div id="tagsContainer">
+                  <!-- Tags will be added here -->
+                </div>
+                <input 
+                  type="text" 
+                  id="designTagsInput" 
+                  class="tags-input" 
+                  placeholder="Type tag and press Enter..."
+                  onkeydown="handleTagInput(event)"
+                >
+              </div>
+              <small style="color: #666;">Add tags for search (e.g., modern, business, wedding)</small>
+            </div>
+            
+            <!-- Form Actions -->
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; border-top: 1px solid #e9ecef; padding-top: 20px;">
+              <button type="button" class="nav-btn" onclick="closeModal('designModal')" style="background: #6c757d;">
+                Cancel
+              </button>
+              <button type="submit" class="nav-btn" style="background: #28a745;">
+                💾 Save Design
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check if user is admin (using separate adminUser storage)
+    function checkAdminAccess() {
+      const adminUser = JSON.parse(localStorage.getItem("adminUser") || "{}");
+      console.log("🔍 Checking admin access:", adminUser);
+      
+      if (!adminUser.username || adminUser.username !== "admin") {
+        console.log("❌ Admin access denied");
+        // Show login required message and hide content
+        document.getElementById('loginRequired').style.display = 'block';
+        document.querySelectorAll('.content-section').forEach(section => {
+          section.style.display = 'none';
+        });
+        document.querySelector('.admin-sidebar').style.display = 'none';
+        return false;
+      }
+      
+      console.log("✅ Admin access granted");
+      // Hide login required message and show content
+      document.getElementById('loginRequired').style.display = 'none';
+      document.querySelector('.admin-sidebar').style.display = 'block';
+      return true;
+    }
+
+    // Set admin user info
+    function setAdminInfo() {
+      const adminUser = JSON.parse(localStorage.getItem("adminUser") || "{}");
+      console.log("👤 Setting admin info:", adminUser);
+      document.getElementById("adminUserInfo").textContent = 
+        `${adminUser.full_name || 'Admin User'} (${adminUser.role || 'Admin'})`;
+    }
+
+    // Navigation
+    function setupNavigation() {
+      const menuItems = document.querySelectorAll('.menu-item');
+      const contentSections = document.querySelectorAll('.content-section');
+
+      menuItems.forEach(item => {
+        item.addEventListener('click', () => {
+          // Remove active class from all
+          menuItems.forEach(i => i.classList.remove('active'));
+          contentSections.forEach(s => s.classList.remove('active'));
+
+          // Add active class to clicked
+          item.classList.add('active');
+          const sectionId = item.getAttribute('data-section');
+          document.getElementById(sectionId).classList.add('active');
+
+          // Load section data
+          loadSectionData(sectionId);
+        });
+      });
+    }
+
+    // Design Management with Single Image
+   // Design Management with Single Image
+let currentEditingDesignId = null;
+let selectedImages = [];
+let designTags = [];
+
+    // Single Image Handling
+    // Fixed Image Selection Function
+// ---------------------------
+// Replace handleImageSelection
+// ---------------------------
+// Single Image Handling - FIXED VERSION (based on profile picture working code)
+// SIMPLE Image Selection - This WILL work
+function handleImageSelection(input) {
+    console.log("🖼️ Handling image selection...");
+    
+    if (!input.files || input.files.length === 0) {
+        console.log("No file selected");
+        return;
+    }
+    
+    const file = input.files[0];
+    console.log("File selected:", file.name, file.type, file.size);
+    
+    // Basic validation
+    if (!file.type.startsWith('image/')) {
+        alert('Please select an image file (JPG, PNG, etc.)');
+        return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+    }
+    
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        console.log("File read successfully");
+        
+        // Create simple image object
+        const imageData = {
+            id: Date.now(),
+            file: file,
+            dataUrl: e.target.result,
+            name: file.name
+        };
+        
+        // Only keep one image
+        selectedImages = [imageData];
+        
+        // Show preview
+        updateImagePreviews();
+        
+        console.log("Image ready for upload");
+    };
+    
+    reader.onerror = function(error) {
+        console.error("Error reading file:", error);
+        alert('Error reading image file');
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+    
+    // DON'T reset the input value here - this was causing the issue
+    // input.value = ''; // REMOVE THIS LINE
+    // Update preview - SIMPLE version
+function updateImagePreviews() {
+    const container = document.getElementById('imagePreviewContainer');
+    
+    if (!container) {
+        console.error("Preview container not found!");
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    if (selectedImages.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #666; border: 2px dashed #ddd; border-radius: 8px;">
+                <p>No image selected</p>
+                <small>Select one image for the design</small>
+            </div>
+        `;
+        return;
+    }
+    
+    selectedImages.forEach(image => {
+        const previewItem = document.createElement('div');
+        previewItem.className = 'image-preview-item';
+        previewItem.innerHTML = `
+            <img src="${image.dataUrl}" alt="Preview" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+            <button type="button" class="remove-image-btn" onclick="removeImage(${image.id})">&times;</button>
+        `;
+        container.appendChild(previewItem);
+    });
+}
+// Add this function after the saveDesign function
+function searchDesigns() {
+    const searchTerm = document.getElementById('designSearch').value.toLowerCase();
+    const designs = window.allDesigns || [];
+    
+    if (!searchTerm) {
+        // If search is empty, show all designs
+        renderDesignsGrid(designs);
+        return;
+    }
+    
+    const filteredDesigns = designs.filter(design => {
+        const nameMatch = design.name.toLowerCase().includes(searchTerm);
+        const tagsMatch = design.tags && design.tags.toLowerCase().includes(searchTerm);
+        const descriptionMatch = design.description && design.description.toLowerCase().includes(searchTerm);
+        
+        return nameMatch || tagsMatch || descriptionMatch;
+    });
+    
+    renderDesignsGrid(filteredDesigns);
+}
+// Update the renderDesignsGrid function - replace the top part
+function renderDesignsGrid(designs) {
+    const searchTerm = document.getElementById('designSearch')?.value || '';
+    const isSearching = searchTerm.trim() !== '';
+    
+    let designsHTML = `
+        <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>${isSearching ? `Search Results: ${designs.length} design(s) found` : `Total Designs: ${designs.length}`}</strong>
+            </div>
+            <div>
+                <button class="nav-btn" onclick="showAddDesignModal()">➕ Add New Design</button>
+            </div>
+        </div>
+    `;
+
+    if (designs.length === 0) {
+        if (isSearching) {
+            designsHTML += `
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <h3>🔍 No Designs Found</h3>
+                    <p>No designs match your search for "<strong>${searchTerm}</strong>"</p>
+                    <button class="nav-btn" onclick="clearDesignSearch()" style="margin-top: 10px;">🗑️ Clear Search</button>
+                </div>
+            `;
+        } else {
+            designsHTML += `
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <h3>🎨 No Designs Found</h3>
+                    <p>Get started by adding your first design!</p>
+                    <button class="nav-btn" onclick="showAddDesignModal()" style="margin-top: 10px;">➕ Add First Design</button>
+                </div>
+            `;
+        }
+        
+        document.getElementById('designsTableContainer').innerHTML = designsHTML;
+        return;
+    }
+
+    designsHTML += `<div class="designs-grid">`;
+
+    // Rest of your existing renderDesignsGrid code continues here...
+    designs.forEach(design => {
+        const mainImage = design.images && design.images.length > 0 ? 
+            `data:${design.images[0].type};base64,${design.images[0].data}` : 
+            'https://via.placeholder.com/300x200?text=No+Image';
+        
+        // Generate tags HTML
+        let tagsHTML = '';
+        if (design.tags) {
+            const tagList = design.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+            if (tagList.length > 0) {
+                tagsHTML = `
+                    <div class="design-tags">
+                        ${tagList.map(tag => `<span class="design-tag">${tag}</span>`).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        designsHTML += `
+            <div class="design-card" data-design-id="${design.id}">
+                <div class="design-image-gallery">
+                    <img src="${mainImage}" alt="${design.name}" class="main-design-image">
+                </div>
+                <div class="design-name">${design.name}</div>
+                <div class="design-price">₹${design.price}</div>
+                ${tagsHTML}
+                <div class="design-description">${design.description || 'No description provided'}</div>
+                <div class="design-actions">
+                    <button class="action-btn edit-btn" onclick="editDesign(${design.id})">✏️ Edit</button>
+                    <button class="action-btn delete-btn" onclick="deleteDesign(${design.id})">🗑️ Delete</button>
+                </div>
+            </div>
+        `;
+    });
+
+    designsHTML += `</div>`;
+    document.getElementById('designsTableContainer').innerHTML = designsHTML;
+}
+// Add this function after the searchDesigns function
+function clearDesignSearch() {
+    document.getElementById('designSearch').value = '';
+    const designs = window.allDesigns || [];
+    renderDesignsGrid(designs);
+}
+// Remove image
+function removeImage(imageId) {
+    selectedImages = selectedImages.filter(img => img.id !== imageId);
+    updateImagePreviews();
+}
+
+    // Tags Handling
+    function handleTagInput(event) {
+        if (event.key === 'Enter' || event.key === ',') {
+            event.preventDefault();
+            const input = event.target;
+            const tag = input.value.trim().replace(',', '');
+            
+            if (tag && !designTags.includes(tag)) {
+                designTags.push(tag);
+                updateTagsDisplay();
+                input.value = '';
+            }
+        }
+    }
+
+    function updateTagsDisplay() {
+        const tagsContainer = document.getElementById('tagsContainer');
+        tagsContainer.innerHTML = '';
+        
+        designTags.forEach((tag, index) => {
+            const tagElement = document.createElement('div');
+            tagElement.className = 'tag-item';
+            tagElement.innerHTML = `
+                ${tag}
+                <button type="button" class="tag-remove" onclick="removeTag(${index})">&times;</button>
+            `;
+            tagsContainer.appendChild(tagElement);
+        });
+    }
+
+    function removeTag(index) {
+        designTags.splice(index, 1);
+        updateTagsDisplay();
+    }
+
+    // Show Add Design Modal
+    // Show Add Design Modal
+function showAddDesignModal() {
+    currentEditingDesignId = null;
+    selectedImages = [];
+    designTags = [];
+    
+    // Reset form
+    document.getElementById('designForm').reset();
+    document.getElementById('designModalTitle').textContent = '🎨 Add New Design';
+    document.getElementById('tagsContainer').innerHTML = '';
+    
+    // Reset image preview
+    updateImagePreviews();
+    
+    openModal('designModal');
+}
+
+// TEST FUNCTION - Add this to debug
+function testImageUpload() {
+    console.log("=== TESTING IMAGE UPLOAD ===");
+    console.log("1. selectedImages:", selectedImages);
+    console.log("2. designTags:", designTags);
+    console.log("3. currentEditingDesignId:", currentEditingDesignId);
+    
+    // Test if elements exist
+    const form = document.getElementById('designForm');
+    const preview = document.getElementById('imagePreviewContainer');
+    const fileInput = document.getElementById('designImages');
+    
+    console.log("4. Form exists:", !!form);
+    console.log("5. Preview container exists:", !!preview);
+    console.log("6. File input exists:", !!fileInput);
+    console.log("=== TEST COMPLETE ===");
+}
+// File to Base64 utility
+// File to Base64 utility - IMPROVED VERSION
+// File to Base64 utility - SIMPLIFIED (same as profile picture)
+// Simple file to base64 - remove if you have a complex one
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+    });
+}
+
+function updateImagePreviews() {
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    previewContainer.innerHTML = '';
+    
+    console.log("🔄 Updating previews, selectedImages count:", selectedImages.length);
+    
+    if (selectedImages.length === 0) {
+        previewContainer.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #666; border: 2px dashed #ddd; border-radius: 8px;">
+                <p>No image selected</p>
+                <small>Select one image for the design</small>
+            </div>
+        `;
+        return;
+    }
+    
+    selectedImages.forEach((image, index) => {
+        const previewItem = document.createElement('div');
+        previewItem.className = 'image-preview-item';
+        previewItem.innerHTML = `
+            <img src="${image.dataUrl}" alt="Design Preview" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+            <button type="button" class="remove-image-btn" onclick="removeImage(${image.id})">&times;</button>
+            <div style="position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">
+                Main Image
+            </div>
+        `;
+        previewContainer.appendChild(previewItem);
+    });
+    
+    console.log("✅ Preview updated");
+}
+// Force initialize designs database
+async function forceInitDesignsDatabase() {
+    if (confirm('⚠️ This will DELETE and RECREATE the designs database. Are you sure?')) {
+        try {
+            const response = await fetch('/admin/force-init-designs', {
+                method: 'POST'
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('✅ Designs database FORCE INITIALIZED successfully!');
+                loadDesignsData();
+            } else {
+                alert('❌ Error: ' + result.message);
+            }
+        } catch (error) {
+            alert('❌ Error: ' + error.message);
+        }
+    }
+}
+
+    // Save Design with Single Image
+    // Save Design with Single Image - FIXED VERSION
+// Save Design with Single Image - IMPROVED DEBUGGING VERSION
+// Save Design with Single Image - FIXED VERSION
+// SIMPLE Save Design - This WILL work
+async function saveDesign(event) {
+    event.preventDefault();
+    console.log("💾 Starting design save...");
+    
+    // Get form data
+    const name = document.getElementById('designName').value.trim();
+    const price = document.getElementById('designPrice').value;
+    const description = document.getElementById('designDescription').value.trim();
+    const tags = designTags.join(',');
+    
+    // Basic validation
+    if (!name || !price || !description) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    if (selectedImages.length === 0 && !currentEditingDesignId) {
+        alert('Please select an image for the design');
+        return;
+    }
+    
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '⏳ Saving...';
+    submitBtn.disabled = true;
+    
+    try {
+        // Prepare image data
+        let imagesData = [];
+        if (selectedImages.length > 0) {
+            const image = selectedImages[0];
+            
+            // Convert to base64 string (remove data URL prefix)
+            const base64Data = image.dataUrl.split(',')[1];
+            
+            imagesData.push({
+                image_data: base64Data,
+                image_type: image.file.type || 'image/jpeg'
+            });
+            
+            console.log("Image prepared:", image.name, "Size:", base64Data.length);
+        }
+        
+        // Create payload
+        const payload = {
+            name: name,
+            price: parseFloat(price),
+            description: description,
+            tags: tags,
+            images: imagesData
+        };
+        
+        console.log("Sending payload to server...");
+        
+        // Send to server
+        const response = await fetch('/admin/save-design', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        console.log("Server response:", result);
+        
+        if (result.success) {
+            alert('✅ Design saved successfully!');
+            closeModal('designModal');
+            loadDesignsData();
+        } else {
+            throw new Error(result.message || 'Failed to save design');
+        }
+        
+    } catch (error) {
+        console.error('Save error:', error);
+        alert('❌ Error: ' + error.message);
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+    // Reset designs database
+    async function resetDesignsDatabase() {
+        if (confirm('⚠️ This will reset the designs database and delete all designs. Are you sure?')) {
+            try {
+                const response = await fetch('/admin/reset-designs-db', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Designs database reset successfully! Sample designs have been added.');
+                    loadDesignsData();
+                } else {
+                    alert('❌ Error resetting database: ' + result.message);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+    }
+
+    // Edit Design with Single Image
+    async function editDesign(designId) {
+        try {
+            console.log(`✏️ Loading design for editing: ${designId}`);
+            const response = await fetch('/admin/designs');
+            const result = await response.json();
+
+            if (result.success) {
+                const design = result.designs.find(d => d.id === designId);
+                if (design) {
+                    currentEditingDesignId = designId;
+                    selectedImages = [];
+                    designTags = design.tags ? design.tags.split(',').map(t => t.trim()).filter(t => t) : [];
+                    
+                    // Update form fields
+                    document.getElementById('designModalTitle').textContent = '✏️ Edit Design';
+                    document.getElementById('designName').value = design.name || '';
+                    document.getElementById('designPrice').value = design.price || '';
+                    document.getElementById('designDescription').value = design.description || '';
+                    
+                    // Update tags display
+                    updateTagsDisplay();
+                    
+                    // Show existing image as preview
+                    const previewContainer = document.getElementById('imagePreviewContainer');
+                    previewContainer.innerHTML = '';
+                    
+                    if (design.images && design.images.length > 0) {
+                        const image = design.images[0];
+                        previewContainer.innerHTML = `
+                            <div class="image-preview-item">
+                                <img src="data:${image.type};base64,${image.data}" alt="Existing design image" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+                                <div style="position: absolute; top: -8px; right: -8px; background: #6c757d; color: white; border-radius: 4px; padding: 2px 6px; font-size: 10px;">
+                                    Current
+                                </div>
+                                <div style="position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">
+                                    Main Image
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        previewContainer.innerHTML = `
+                            <div style="text-align: center; padding: 20px; color: #666; border: 2px dashed #ddd; border-radius: 8px;">
+                                <p>No existing image</p>
+                                <small>Add new image below</small>
+                            </div>
+                        `;
+                    }
+                    
+                    // Image not required for editing (can keep existing)
+                    document.getElementById('designImages').required = false;
+                    
+                    openModal('designModal');
+                } else {
+                    alert('❌ Design not found');
+                }
+            } else {
+                alert('❌ Error loading design: ' + result.message);
+            }
+        } catch (error) {
+            console.error('💥 Error in editDesign:', error);
+            alert('❌ Error loading design for editing: ' + error.message);
+        }
+    }
+
+    // Load Designs with Single Image
+    async function loadDesignsData() {
+    try {
+        const container = document.getElementById('designsTableContainer');
+        container.innerHTML = '<div class="loading">Loading designs...</div>';
+
+        const response = await fetch('/admin/designs');
+        const result = await response.json();
+
+        if (result.success) {
+            const designs = result.designs || [];
+            window.allDesigns = designs; // Store for search functionality
+
+            if (designs.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <h3>🎨 No Designs Found</h3>
+                        <p>Get started by adding your first design!</p>
+                        <button class="nav-btn" onclick="showAddDesignModal()" style="margin-top: 10px;">➕ Add First Design</button>
+                    </div>
+                `;
+                return;
+            }
+
+            renderDesignsGrid(designs);
+        } else {
+            container.innerHTML = `<div class="error">Error loading designs: ${result.message}</div>`;
+        }
+    } catch (error) {
+        console.error('Error loading designs:', error);
+        document.getElementById('designsTableContainer').innerHTML = `
+            <div class="error">
+                <h3>🚨 Error Loading Designs</h3>
+                <p>${error.message}</p>
+                <button class="nav-btn" onclick="loadDesignsData()" style="margin-top: 10px;">🔄 Retry</button>
+            </div>
+        `;
+    }
+}
+
+    // Render Designs Grid with Single Image
+    function renderDesignsGrid(designs) {
+        let designsHTML = `
+            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>Total Designs: ${designs.length}</strong>
+                </div>
+                <div>
+                    <button class="nav-btn" onclick="showAddDesignModal()">➕ Add New Design</button>
+                </div>
+            </div>
+            <div class="designs-grid">
+        `;
+
+        designs.forEach(design => {
+            const mainImage = design.images && design.images.length > 0 ? 
+                `data:${design.images[0].type};base64,${design.images[0].data}` : 
+                'https://via.placeholder.com/300x200?text=No+Image';
+            
+            // Generate tags HTML
+            let tagsHTML = '';
+            if (design.tags) {
+                const tagList = design.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+                if (tagList.length > 0) {
+                    tagsHTML = `
+                        <div class="design-tags">
+                            ${tagList.map(tag => `<span class="design-tag">${tag}</span>`).join('')}
+                        </div>
+                    `;
+                }
+            }
+
+            designsHTML += `
+                <div class="design-card" data-design-id="${design.id}">
+                    <div class="design-image-gallery">
+                        <img src="${mainImage}" alt="${design.name}" class="main-design-image">
+                    </div>
+                    <div class="design-name">${design.name}</div>
+                    <div class="design-price">₹${design.price}</div>
+                    ${tagsHTML}
+                    <div class="design-description">${design.description || 'No description provided'}</div>
+                    <div class="design-actions">
+                        <button class="action-btn edit-btn" onclick="editDesign(${design.id})">✏️ Edit</button>
+                        <button class="action-btn delete-btn" onclick="deleteDesign(${design.id})">🗑️ Delete</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        designsHTML += `</div>`;
+        document.getElementById('designsTableContainer').innerHTML = designsHTML;
+    }
+
+    // Delete Design
+    async function deleteDesign(designId) {
+        if (confirm('Are you sure you want to delete this design? This action cannot be undone.')) {
+            try {
+                const response = await fetch(`/admin/designs/${designId}`, { 
+                    method: 'DELETE' 
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Design deleted successfully');
+                    loadDesignsData();
+                } else {
+                    alert('❌ Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('❌ Error deleting design: ' + error.message);
+            }
+        }
+    }
+
+    // Load data for specific section
+    // Load data for specific section
+async function loadSectionData(section) {
+  if (!checkAdminAccess()) return;
+  
+  switch(section) {
+    case 'dashboard':
+      await loadDashboardData();
+      break;
+    case 'customers':
+      await loadCustomersData();
+      break;
+    case 'orders':
+      await loadOrdersData(); // This should call the fixed function
+      break;
+    case 'designs':
+      await loadDesignsData();
+      break;
+    case 'analytics':
+      await loadAnalyticsData();
+      break;
+  }
+}
+
+// Debug function to check current state
+function debugCurrentState() {
+    console.log("=== DEBUG CURRENT STATE ===");
+    console.log("Selected Images:", selectedImages);
+    console.log("Selected Images Length:", selectedImages.length);
+    console.log("Design Tags:", designTags);
+    console.log("Current Editing ID:", currentEditingDesignId);
+    console.log("=== END DEBUG ===");
+}
+
+// Call this in your handleImageSelection after updateImagePreviews:
+function updateImagePreviews() {
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    previewContainer.innerHTML = '';
+    
+    console.log("🔄 Updating previews, selectedImages count:", selectedImages.length);
+    
+    if (selectedImages.length === 0) {
+        previewContainer.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #666; border: 2px dashed #ddd; border-radius: 8px;">
+                <p>No image selected</p>
+                <small>Select one image for the design</small>
+            </div>
+        `;
+        return;
+    }
+    
+    selectedImages.forEach((image, index) => {
+        const previewItem = document.createElement('div');
+        previewItem.className = 'image-preview-item';
+        previewItem.innerHTML = `
+            <img src="${image.dataUrl}" alt="Design Preview" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+            <button type="button" class="remove-image-btn" onclick="removeImage(${image.id})">&times;</button>
+            <div style="position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">
+                Main Image
+            </div>
+        `;
+        previewContainer.appendChild(previewItem);
+    });
+    
+    console.log("✅ Preview updated");
+    debugCurrentState(); // Add this for debugging
+}
+    // Dashboard Data
+    async function loadDashboardData() {
+      try {
+        console.log("📊 Loading dashboard data...");
+        const content = document.getElementById('recentOrders');
+        content.innerHTML = '<div class="loading">Loading dashboard...</div>';
+
+        // Fetch admin stats from the dedicated endpoint
+        const statsResponse = await fetch('/admin/stats');
+        const statsData = await statsResponse.json();
+
+        if (statsData.success) {
+          const stats = statsData.stats;
+          
+          // Update the stats cards with real data
+          document.getElementById('totalUsers').textContent = stats.total_users || 0;
+          document.getElementById('totalOrders').textContent = stats.total_orders || 0;
+          document.getElementById('pendingOrders').textContent = stats.pending_orders || 0;
+          document.getElementById('totalRevenue').textContent = `₹${(stats.total_revenue || 0).toFixed(2)}`;
+
+          console.log("📊 Dashboard stats updated:", stats);
+        } else {
+          console.error("❌ Failed to load stats:", statsData.message);
+          // Set default values if stats fail
+          document.getElementById('totalUsers').textContent = '0';
+          document.getElementById('totalOrders').textContent = '0';
+          document.getElementById('pendingOrders').textContent = '0';
+          document.getElementById('totalRevenue').textContent = '₹0';
+        }
+
+        // Load recent orders for the dashboard
+        await loadRecentOrders();
+
+      } catch (error) {
+        console.error('❌ Error loading dashboard:', error);
+        document.getElementById('recentOrders').innerHTML = '<div class="error">Error loading dashboard data</div>';
+        
+        // Set default values on error
+        document.getElementById('totalUsers').textContent = '0';
+        document.getElementById('totalOrders').textContent = '0';
+        document.getElementById('pendingOrders').textContent = '0';
+        document.getElementById('totalRevenue').textContent = '₹0';
+      }
+    }
+
+    // Load recent orders for dashboard display
+    async function loadRecentOrders() {
+      try {
+        const content = document.getElementById('recentOrders');
+        
+        const response = await fetch('/admin/orders');
+        const result = await response.json();
+
+        if (result.success && result.orders.length > 0) {
+          const recentOrders = result.orders.slice(0, 8); // Show last 8 orders
+          
+          let ordersHTML = `
+            <div style="overflow-x: auto;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Design</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+          `;
+
+          recentOrders.forEach(order => {
+            const total = (order.price || 0) * (order.quantity || 1);
+            const orderDate = order.order_date ? new Date(order.order_date).toLocaleDateString() : 'N/A';
+            
+            ordersHTML += `
+              <tr>
+                <td><strong>#${order.id}</strong></td>
+                <td>${order.username || 'Unknown User'}</td>
+                <td>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <img src="${order.image_url || 'https://via.placeholder.com/40'}" 
+                         alt="${order.design_name}" 
+                         style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                    <span>${order.design_name || 'Unknown Design'}</span>
+                  </div>
+                </td>
+                <td><strong>₹${total.toFixed(2)}</strong></td>
+                <td>${orderDate}</td>
+                <td>
+                  <span class="status-badge status-${order.status?.toLowerCase() || 'pending'}">
+                    ${order.status || 'Pending'}
+                  </span>
+                </td>
+              </tr>
+            `;
+          });
+
+          ordersHTML += `
+                </tbody>
+              </table>
+            </div>
+            <div style="text-align: center; margin-top: 15px;">
+              <button class="nav-btn" onclick="loadSectionData('orders')">📦 View All Orders</button>
+            </div>
+          `;
+
+          content.innerHTML = ordersHTML;
+        } else {
+          content.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #666;">
+              <h3>📭 No Recent Orders</h3>
+              <p>No orders have been placed yet.</p>
+              <button class="nav-btn" onclick="loadOrdersData()" style="margin-top: 10px;">Refresh Orders</button>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error loading recent orders:', error);
+        document.getElementById('recentOrders').innerHTML = `
+          <div class="error">
+            <h3>❌ Error Loading Orders</h3>
+            <p>${error.message}</p>
+            <button class="nav-btn" onclick="loadDashboardData()" style="margin-top: 10px;">Try Again</button>
+          </div>
+        `;
+      }
+    }
+
+    // Orders Management
+    // Orders Management - FIXED VERSION
+// Orders Management - IMPROVED UI VERSION
+async function loadOrdersData() {
+    try {
+        console.log("📦 Loading orders data...");
+        const container = document.getElementById('ordersTableContainer');
+        container.innerHTML = '<div class="loading">🔄 Loading orders data...</div>';
+
+        const response = await fetch('/admin/orders');
+        const result = await response.json();
+
+        if (result.success) {
+            const orders = result.orders || [];
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            // Filter orders based on status
+            let filteredOrders = orders;
+            if (statusFilter !== 'all') {
+                filteredOrders = orders.filter(order => order.status === statusFilter);
+            }
+
+            console.log(`Found ${orders.length} orders, ${filteredOrders.length} after filtering`);
+
+            // Update summary cards
+            updateOrdersSummary(orders);
+
+            if (filteredOrders.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: #666;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">📭</div>
+                        <h3 style="margin-bottom: 10px; color: #495057;">No Orders Found</h3>
+                        <p style="margin-bottom: 20px; color: #6c757d;">No orders match your current filter criteria.</p>
+                        <button class="nav-btn" onclick="document.getElementById('statusFilter').value='all'; loadOrdersData();" 
+                                style="background: #007bff;">
+                            📋 Show All Orders
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Build orders table with improved UI
+            let ordersHTML = `
+                <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <strong style="color: #495057; font-size: 16px;">📊 Showing ${filteredOrders.length} order(s)</strong>
+                    </div>
+                    <div style="color: #6c757d; font-size: 14px;">
+                        Filtered by: <strong>${statusFilter === 'all' ? 'All Orders' : statusFilter}</strong>
+                    </div>
+                </div>
+                <div class="orders-grid" style="display: grid; gap: 20px;">
+            `;
+
+            filteredOrders.forEach(order => {
+                const total = (order.price || 0) * (order.quantity || 1);
+                const orderDate = order.order_date ? new Date(order.order_date).toLocaleDateString('en-IN') : 'N/A';
+                const statusClass = `status-${(order.status || 'pending').toLowerCase()}`;
+                
+                ordersHTML += `
+                    <div class="order-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #007bff;">
+                        <div style="display: flex; justify-content: between; align-items: flex-start; gap: 15px;">
+                            <!-- Order Image -->
+                            <div style="flex-shrink: 0;">
+                                <img src="${order.image_url || 'https://via.placeholder.com/80'}" 
+                                     alt="${order.design_name}" 
+                                     style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e9ecef;">
+                            </div>
+                            
+                            <!-- Order Details -->
+                            <div style="flex: 1;">
+                                <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 15px;">
+                                    <div>
+                                        <h4 style="margin: 0 0 5px 0; color: #343a40; font-size: 16px;">
+                                            ${order.design_name || 'Unknown Design'}
+                                        </h4>
+                                        <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                                            👤 <strong>${order.username || 'Unknown Customer'}</strong>
+                                        </p>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 5px;">
+                                            ₹${total.toFixed(2)}
+                                        </div>
+                                        <div style="font-size: 12px; color: #6c757d;">
+                                            ${orderDate}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Status and Actions -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <select class="status-select" onchange="updateOrderStatus(${order.id}, this.value)" 
+                                                style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer; font-size: 12px;">
+                                            <option value="Ordered" ${order.status === 'Ordered' ? 'selected' : ''}>📥 Ordered</option>
+                                            <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
+                                            <option value="Processing" ${order.status === 'Processing' ? 'selected' : ''}>🔄 Processing</option>
+                                            <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>✅ Completed</option>
+                                        </select>
+                                        <span class="status-badge ${statusClass}" style="font-size: 11px;">
+                                            ${order.status || 'Pending'}
+                                        </span>
+                                    </div>
+                                    
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="action-btn view-btn" onclick="viewCustomerOrders('${order.username}')" 
+                                                style="background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+                                            👤 View Orders
+                                        </button>
+                                        <button class="action-btn delete-btn" onclick="deleteOrder(${order.id})" 
+                                                style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            ordersHTML += `</div>`; // Close orders-grid
+
+            container.innerHTML = ordersHTML;
+        } else {
+            container.innerHTML = `
+                <div class="error" style="text-align: center; padding: 40px; background: #f8d7da; color: #721c24; border-radius: 8px;">
+                    <div style="font-size: 48px; margin-bottom: 15px;">❌</div>
+                    <h3 style="margin-bottom: 10px;">Error Loading Orders</h3>
+                    <p style="margin-bottom: 20px;">${result.message || 'Unknown error occurred'}</p>
+                    <button class="nav-btn" onclick="loadOrdersData()" style="background: #dc3545;">
+                        🔄 Try Again
+                    </button>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Orders load error:', error);
+        document.getElementById('ordersTableContainer').innerHTML = `
+            <div class="error" style="text-align: center; padding: 40px; background: #f8d7da; color: #721c24; border-radius: 8px;">
+                <div style="font-size: 48px; margin-bottom: 15px;">🚨</div>
+                <h3 style="margin-bottom: 10px;">Network Error</h3>
+                <p style="margin-bottom: 20px;">Failed to load orders: ${error.message}</p>
+                <button class="nav-btn" onclick="loadOrdersData()" style="background: #dc3545;">
+                    🔄 Retry
+                </button>
+            </div>
+        `;
+    }
+}
+// Update orders summary cards
+function updateOrdersSummary(orders) {
+    const totalOrders = orders.length;
+    const completedOrders = orders.filter(o => o.status === 'Completed').length;
+    const pendingOrders = orders.filter(o => o.status === 'Pending').length;
+    
+    // Calculate total revenue from completed orders
+    const totalRevenue = orders
+        .filter(o => o.status === 'Completed')
+        .reduce((sum, order) => sum + (order.price * (order.quantity || 1)), 0);
+
+    // Update summary cards
+    const summaryCards = document.querySelector('.orders-summary-cards');
+    if (summaryCards) {
+        summaryCards.innerHTML = `
+            <div class="summary-card" style="background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                <div class="summary-number" style="font-size: 32px; font-weight: bold;">${totalOrders}</div>
+                <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Total Orders</div>
+            </div>
+            <div class="summary-card" style="background: linear-gradient(135deg, #28a745, #1e7e34); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                <div class="summary-number" style="font-size: 32px; font-weight: bold;">${completedOrders}</div>
+                <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Completed</div>
+            </div>
+            <div class="summary-card" style="background: linear-gradient(135deg, #ffc107, #e0a800); color: black; padding: 20px; border-radius: 10px; text-align: center;">
+                <div class="summary-number" style="font-size: 32px; font-weight: bold;">${pendingOrders}</div>
+                <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Pending</div>
+            </div>
+            <div class="summary-card" style="background: linear-gradient(135deg, #6c757d, #545b62); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                <div class="summary-number" style="font-size: 32px; font-weight: bold;">₹${totalRevenue.toFixed(2)}</div>
+                <div class="summary-label" style="font-size: 14px; opacity: 0.9;">Total Revenue</div>
+            </div>
+        `;
+    }
+}
+
+    // Customer Management
+    async function loadCustomersData() {
+      try {
+        const container = document.getElementById('customersTableContainer');
+        container.innerHTML = '<div class="loading">Loading customers data...</div>';
+
+        const response = await fetch('/admin/users');
+        const result = await response.json();
+
+        console.log("📋 Customers API Response:", result);
+
+        if (result.success && result.users && result.users.length > 0) {
+          // Store users globally for search functionality
+          window.allCustomers = result.users;
+
+          let customersHTML = `
+            <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <strong>Total Customers: ${result.users.length}</strong>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input 
+                  type="text" 
+                  id="customerSearch" 
+                  placeholder="🔍 Search by username..." 
+                  style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; width: 250px;"
+                  onkeyup="searchCustomers()"
+                >
+                <button class="nav-btn" onclick="clearSearch()" style="background: #6c757d;">
+                  🗑️ Clear
+                </button>
+              </div>
+            </div>
+            <div style="overflow-x: auto;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Username</th>
+                    <th>Mobile</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="customersTableBody">
+          `;
+
+          result.users.forEach(user => {
+            console.log("👤 Processing user:", user);
+            
+            customersHTML += `
+              <tr>
+                <td>${user.id || 'N/A'}</td>
+                <td><strong>${user.fname || ''} ${user.lname || ''}</strong></td>
+                <td>${user.email || 'N/A'}</td>
+                <td>${user.username || 'N/A'}</td>
+                <td>${user.mobile || 'N/A'}</td>
+                <td>
+                  <button class="action-btn view-btn" onclick="viewCustomerOrders('${user.username || ''}')">
+                    📦 View Orders
+                  </button>
+                  <button class="action-btn customer-btn" onclick="viewCustomerDetails('${user.username || ''}')" style="margin-top: 5px;">
+                    👤 View Profile
+                  </button>
+                </td>
+              </tr>
+            `;
+          });
+
+          customersHTML += `
+                </tbody>
+              </table>
+            </div>
+          `;
+          
+          container.innerHTML = customersHTML;
+        } else {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #666;">
+              <h3>👥 No Customers Found</h3>
+              <p>${result.message || 'No customer data available'}</p>
+              <button class="nav-btn" onclick="loadCustomersData()" style="margin-top: 10px;">🔄 Try Again</button>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('❌ Error loading customers:', error);
+        document.getElementById('customersTableContainer').innerHTML = `
+          <div class="error">
+            <h3>🚨 Error Loading Customers</h3>
+            <p>${error.message}</p>
+            <button class="nav-btn" onclick="loadCustomersData()" style="margin-top: 10px;">🔄 Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    // Update order status
+// Filter orders by status
+function filterOrders() {
+    loadOrdersData();
+}
+
+// Update order status
+async function updateOrderStatus(orderId, newStatus) {
+    try {
+        console.log(`🔄 Updating order ${orderId} status to: ${newStatus}`);
+        
+        const response = await fetch(`/admin/orders/${orderId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: newStatus })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log(`✅ Order ${orderId} status updated to: ${newStatus}`);
+            showNotification(`Order status updated to ${newStatus}`, 'success');
+            loadOrdersData();
+        } else {
+            showNotification('Failed to update order status: ' + result.message, 'error');
+            loadOrdersData();
+        }
+    } catch (error) {
+        console.error('❌ Error updating order status:', error);
+        showNotification('Error updating order status: ' + error.message, 'error');
+        loadOrdersData();
+    }
+}
+
+// Delete order
+async function deleteOrder(orderId) {
+    if (confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+        try {
+            const response = await fetch(`/admin/orders/${orderId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showNotification('Order deleted successfully', 'success');
+                loadOrdersData();
+            } else {
+                showNotification('Failed to delete order: ' + result.message, 'error');
+            }
+        } catch (error) {
+            console.error('❌ Error deleting order:', error);
+            showNotification('Error deleting order: ' + error.message, 'error');
+        }
+    }
+}
+
+// Filter orders by status
+function filterOrders() {
+    loadOrdersData();
+}
+
+// Notification function
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    if (type === 'success') {
+        notification.style.background = '#28a745';
+    } else if (type === 'error') {
+        notification.style.background = '#dc3545';
+    } else {
+        notification.style.background = '#17a2b8';
+    }
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+    // View Customer Details
+    async function viewCustomerDetails(username) {
+      try {
+        console.log("🔍 Fetching customer details for:", username);
+        
+        let userData = null;
+        
+        // Try stored customers first
+        if (window.allCustomers && window.allCustomers.length > 0) {
+          userData = window.allCustomers.find(user => user.username === username);
+        }
+        
+        // If not found, try API call
+        if (!userData) {
+          const usersResponse = await fetch('/admin/users');
+          const usersResult = await usersResponse.json();
+          
+          if (usersResult.success && usersResult.users) {
+            userData = usersResult.users.find(user => user.username === username);
+          }
+        }
+
+        if (!userData) {
+          throw new Error(`Customer "${username}" not found in the system.`);
+        }
+
+        console.log("✅ User data found:", userData);
+
+        // Create detailed HTML for customer information
+        const customerHTML = `
+          <div class="customer-details">
+            <div class="detail-item">
+              <label>Customer ID</label>
+              <div>#${userData.id || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+              <label>Full Name</label>
+              <div><strong>${userData.fname || ''} ${userData.lname || ''}</strong></div>
+            </div>
+            <div class="detail-item">
+              <label>Email Address</label>
+              <div>${userData.email || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+              <label>Username</label>
+              <div>${userData.username || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+              <label>Mobile Number</label>
+              <div>${userData.mobile || 'N/A'}</div>
+            </div>
+            <div class="detail-item" style="grid-column: 1 / -1;">
+              <label>Address</label>
+              <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #e9ecef; min-height: 20px;">
+                ${userData.address || 'Not provided by customer'}
+              </div>
+            </div>
+            <div class="detail-item">
+              <label>District</label>
+              <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
+                ${userData.district || 'Not provided'}
+              </div>
+            </div>
+            <div class="detail-item">
+              <label>Profile Picture</label>
+              <div>
+                ${userData.profile_pic ? 
+                  `<img src="${userData.profile_pic}" alt="Profile" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 2px solid #007bff;">` : 
+                  'No profile picture'
+                }
+              </div>
+            </div>
+            <div class="detail-item">
+              <label>Account Created</label>
+              <div>${userData.created_at ? new Date(userData.created_at).toLocaleDateString() : 'N/A'}</div>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 20px;">
+            <button class="nav-btn customer-btn" onclick="viewCustomerOrders('${username}')">
+              📦 View Customer Orders
+            </button>
+            <button class="nav-btn" onclick="closeModal('customerModal')" style="background: #6c757d; margin-left: 10px;">
+              Close
+            </button>
+          </div>
+        `;
+
+        // Update modal content
+        document.getElementById('customerDetailsContent').innerHTML = customerHTML;
+        
+        // Show the modal
+        openModal('customerModal');
+        
+      } catch (error) {
+        console.error('❌ Error loading customer details:', error);
+        
+        document.getElementById('customerDetailsContent').innerHTML = `
+          <div class="error" style="text-align: center; padding: 40px;">
+            <h3>❌ Unable to Load Customer Details</h3>
+            <p>${error.message}</p>
+            <div style="margin-top: 15px;">
+              <button class="nav-btn" onclick="closeModal('customerModal')">
+                Close
+              </button>
+              <button class="nav-btn" onclick="loadCustomersData(); closeModal('customerModal');" style="background: #17a2b8;">
+                🔄 Refresh Data
+              </button>
+            </div>
+          </div>
+        `;
+        
+        openModal('customerModal');
+      }
+    }
+// Debug function to check image handling
+function debugImageUpload() {
+    console.log("🔍 DEBUG IMAGE UPLOAD:");
+    console.log("Selected Images:", selectedImages);
+    console.log("Selected Images Length:", selectedImages.length);
+    
+    if (selectedImages.length > 0) {
+        const image = selectedImages[0];
+        console.log("Image File:", image.file);
+        console.log("Image Name:", image.name);
+        console.log("Image Type:", image.file.type);
+        console.log("Image Size:", image.size);
+        console.log("Has Data URL:", !!image.dataUrl);
+    }
+}
+
+// Call this in your handleImageSelection function:
+    // View Customer Orders - REDIRECT TO NEW PAGE
+    function viewCustomerOrders(username) {
+      // Redirect to customer orders page with username parameter
+      window.location.href = `customer-orders.html?username=${encodeURIComponent(username)}`;
+    }
+
+    // Analytics Data
+    async function loadAnalyticsData() {
+      try {
+        const container = document.getElementById('analyticsContent');
+        container.innerHTML = '<div class="loading">Loading analytics...</div>';
+
+        // Simple analytics message
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px;">
+            <h3>📈 Analytics</h3>
+            <p>Analytics features will be available soon.</p>
+            <p>Focusing on order management first.</p>
+          </div>
+        `;
+
+      } catch (error) {
+        container.innerHTML = '<div class="error">Error loading analytics data</div>';
+      }
+    }
+
+    // Filter Orders
+    function filterOrders() {
+      loadOrdersData();
+    }
+
+    // Search Customers Function
+    function searchCustomers() {
+      const searchTerm = document.getElementById('customerSearch').value.toLowerCase();
+      const customers = window.allCustomers || [];
+      
+      if (!searchTerm) {
+        // If search is empty, show all customers
+        renderCustomersTable(customers);
+        return;
+      }
+      
+      const filteredCustomers = customers.filter(customer => 
+        customer.username && customer.username.toLowerCase().includes(searchTerm)
+      );
+      
+      renderCustomersTable(filteredCustomers);
+    }
+
+    // Render Customers Table
+    function renderCustomersTable(customers) {
+      const tbody = document.getElementById('customersTableBody');
+      
+      if (!tbody) return;
+      
+      if (customers.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
+              No customers found matching your search.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      let customersHTML = '';
+      
+      customers.forEach(user => {
+        customersHTML += `
+          <tr>
+            <td>${user.id || 'N/A'}</td>
+            <td><strong>${user.fname || ''} ${user.lname || ''}</strong></td>
+            <td>${user.email || 'N/A'}</td>
+            <td>${user.username || 'N/A'}</td>
+            <td>${user.mobile || 'N/A'}</td>
+            <td>
+              <button class="action-btn view-btn" onclick="viewCustomerOrders('${user.username || ''}')">
+                📦 View Orders
+              </button>
+              <button class="action-btn customer-btn" onclick="viewCustomerDetails('${user.username || ''}')" style="margin-top: 5px;">
+                👤 View Profile
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      tbody.innerHTML = customersHTML;
+    }
+
+    // Clear Search Function
+    function clearSearch() {
+      document.getElementById('customerSearch').value = '';
+      const customers = window.allCustomers || [];
+      renderCustomersTable(customers);
+    }
+
+    // Utility Functions
+    function refreshData() {
+      if (!checkAdminAccess()) return;
+      const activeSection = document.querySelector('.menu-item.active').getAttribute('data-section');
+      loadSectionData(activeSection);
+      alert('🔄 Data refreshed!');
+    }
+
+    function logout() {
+      localStorage.removeItem("adminUser");
+      window.location.href = "admin-login.html";
+    }
+
+    function goToAdminLogin() {
+      window.location.href = "admin-login.html";
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    function openModal(modalId) {
+      document.getElementById(modalId).style.display = 'flex';
+    }
+
+    // Initialize admin panel
+    function initAdminPanel() {
+      console.log("🚀 Initializing admin panel...");
+      
+      if (!checkAdminAccess()) {
+        console.log("❌ Admin access not granted, showing login required");
+        return;
+      }
+      
+      console.log("✅ Admin access granted, setting up panel");
+      setAdminInfo();
+      setupNavigation();
+      loadDashboardData();
+    }
+
+    // Start the admin panel
+    initAdminPanel();
+  </script>
+</body>
+</html>
