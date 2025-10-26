@@ -3,7 +3,7 @@ import sqlite3
 import os
 import time
 from flask_cors import CORS
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -1430,6 +1430,219 @@ def save_design():
         print(f"💥 SAVE DESIGN ERROR: {str(e)}")
         return jsonify({"success": False, "message": str(e)}), 500
 
+# ==================== ANALYTICS ROUTES ====================
+
+# ==================== ANALYTICS ROUTES ====================
+
+@app.route('/admin/analytics')
+def get_analytics():
+    """Get sales analytics data - SIMPLIFIED VERSION"""
+    try:
+        print("📊 Generating analytics data...")
+        
+        conn_orders = sqlite3.connect(ORDERS_DB)
+        cur_orders = conn_orders.cursor()
+        conn_users = sqlite3.connect(USERS_DB)
+        cur_users = conn_users.cursor()
+        
+        # Get total revenue from completed orders
+        cur_orders.execute("SELECT SUM(price * quantity) FROM orders WHERE status='Completed'")
+        total_revenue = cur_orders.fetchone()[0] or 0
+        
+        # Get total orders
+        cur_orders.execute("SELECT COUNT(*) FROM orders")
+        total_orders = cur_orders.fetchone()[0] or 0
+        
+        # Get pending orders
+        cur_orders.execute("SELECT COUNT(*) FROM orders WHERE status='Pending'")
+        pending_orders = cur_orders.fetchone()[0] or 0
+        
+        # Get new customers (last 30 days)
+        cur_users.execute("SELECT COUNT(*) FROM users WHERE date(created_at) >= date('now', '-30 days')")
+        new_customers = cur_users.fetchone()[0] or 0
+        
+        # Get daily revenue for last 7 days using SQLite date functions
+        daily_revenue = []
+        for i in range(6, -1, -1):  # Last 7 days including today
+            date_query = f"date('now', '-{i} days')"
+            cur_orders.execute(f"""
+                SELECT SUM(price * quantity) 
+                FROM orders 
+                WHERE status='Completed' AND date(order_date) = {date_query}
+            """)
+            revenue = cur_orders.fetchone()[0] or 0
+            daily_revenue.append({
+                "date": (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d"),
+                "revenue": float(revenue)
+            })
+        
+        # Get order status breakdown
+        status_breakdown = []
+        statuses = ['Completed', 'Pending', 'Processing', 'Ordered']
+        for status in statuses:
+            cur_orders.execute("SELECT COUNT(*) FROM orders WHERE status=?", (status,))
+            order_count = cur_orders.fetchone()[0] or 0
+            
+            cur_orders.execute("SELECT SUM(price * quantity) FROM orders WHERE status=?", (status,))
+            revenue = cur_orders.fetchone()[0] or 0
+            
+            status_breakdown.append({
+                "status": status,
+                "order_count": order_count,
+                "revenue": float(revenue)
+            })
+        
+        # Get top performing designs
+        cur_orders.execute("""
+            SELECT design_name, COUNT(*) as order_count, SUM(price * quantity) as revenue
+            FROM orders 
+            WHERE status='Completed'
+            GROUP BY design_name 
+            ORDER BY revenue DESC 
+            LIMIT 5
+        """)
+        top_designs_data = cur_orders.fetchall()
+        
+        top_designs = []
+        for design in top_designs_data:
+            top_designs.append({
+                "name": design[0],
+                "order_count": design[1],
+                "revenue": float(design[2]) if design[2] else 0
+            })
+        
+        # Calculate metrics
+        average_order_value = 0
+        if total_orders > 0:
+            average_order_value = round(total_revenue / total_orders, 2)
+        
+        conversion_rate = 0
+        total_customers_response = get_all_users()
+        total_customers_data = total_customers_response.get_json()
+        total_customers = len(total_customers_data['users']) if total_customers_data['success'] else 0
+        
+        if total_customers > 0:
+            conversion_rate = round((total_orders / total_customers) * 100, 1)
+        
+        conn_orders.close()
+        conn_users.close()
+        
+        # Simplified analytics data without complex period comparisons
+        analytics_data = {
+            "revenue": {
+                "total": float(total_revenue),
+                "current_month": float(total_revenue),  # Simplified
+                "change_percentage": 0  # Simplified for now
+            },
+            "orders": {
+                "total": total_orders,
+                "change_percentage": 0  # Simplified for now
+            },
+            "customers": {
+                "new_customers": new_customers,
+                "change_percentage": 0  # Simplified for now
+            },
+            "daily_revenue": daily_revenue,
+            "status_breakdown": status_breakdown,
+            "top_designs": top_designs,
+            "metrics": {
+                "average_order_value": average_order_value,
+                "conversion_rate": conversion_rate
+            }
+        }
+        
+        print(f"✅ ANALYTICS: Generated data - Revenue: ₹{total_revenue}, Orders: {total_orders}")
+        return jsonify({"success": True, "analytics": analytics_data})
+        
+    except Exception as e:
+        print(f"💥 ANALYTICS ERROR: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/admin/analytics/period', methods=['POST'])
+def get_period_analytics():
+    """Get analytics for specific period - SIMPLIFIED"""
+    try:
+        data = request.get_json()
+        period = data.get('period', '30d')
+        
+        print(f"📅 Generating period analytics for: {period}")
+        
+        # Use SQLite date functions instead of Python date calculations
+        if period == '7d':
+            date_filter = "date('now', '-7 days')"
+        elif period == '90d':
+            date_filter = "date('now', '-90 days')"
+        elif period == '1y':
+            date_filter = "date('now', '-1 year')"
+        else:  # 30d default
+            date_filter = "date('now', '-30 days')"
+        
+        conn_orders = sqlite3.connect(ORDERS_DB)
+        cur_orders = conn_orders.cursor()
+        
+        # Get period revenue
+        cur_orders.execute(f"""
+            SELECT SUM(price * quantity) 
+            FROM orders 
+            WHERE status='Completed' AND order_date >= {date_filter}
+        """)
+        revenue = cur_orders.fetchone()[0] or 0
+        
+        # Get period orders
+        cur_orders.execute(f"SELECT COUNT(*) FROM orders WHERE order_date >= {date_filter}")
+        orders = cur_orders.fetchone()[0] or 0
+        
+        # Calculate average order value
+        aov = 0
+        if orders > 0:
+            aov = round(revenue / orders, 2)
+        
+        conn_orders.close()
+        
+        period_data = {
+            "revenue": float(revenue),
+            "orders": orders,
+            "average_order_value": aov,
+            "start_date": "Period data",
+            "end_date": datetime.now().strftime("%Y-%m-%d")
+        }
+        
+        return jsonify({"success": True, "period_analytics": period_data})
+        
+    except Exception as e:
+        print(f"💥 PERIOD ANALYTICS ERROR: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/admin/analytics/export')
+def export_analytics():
+    """Export analytics data - SIMPLIFIED"""
+    try:
+        # Get basic stats for export
+        conn_orders = sqlite3.connect(ORDERS_DB)
+        cur_orders = conn_orders.cursor()
+        
+        cur_orders.execute("SELECT COUNT(*) FROM orders")
+        total_orders = cur_orders.fetchone()[0] or 0
+        
+        cur_orders.execute("SELECT SUM(price * quantity) FROM orders WHERE status='Completed'")
+        total_revenue = cur_orders.fetchone()[0] or 0
+        
+        conn_orders.close()
+        
+        export_data = {
+            "exported_at": datetime.now().isoformat(),
+            "total_orders": total_orders,
+            "total_revenue": float(total_revenue),
+            "message": "Basic analytics export"
+        }
+        
+        return jsonify({"success": True, "export_data": export_data})
+            
+    except Exception as e:
+        print(f"💥 EXPORT ANALYTICS ERROR: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
 @app.route('/admin/designs/<int:design_id>', methods=['DELETE'])
 def delete_design(design_id):
     """Delete design - FIXED VERSION"""
