@@ -44,60 +44,284 @@
         .logo span {
             color: #ffd700;
         }
-/* Profile Picture Styles */
-.profile-pic-container {
+
+        /* Preview Gallery Styles */
+        .preview-gallery {
+            position: relative;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 500px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+        }
+
+        .preview-thumbnails {
+            display: flex;
+            gap: 8px;
+            margin: 15px 0;
+            overflow-x: auto;
+            padding: 10px 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .preview-thumbnail {
+            width: 60px;
+            height: 60px;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: border-color 0.3s;
+        }
+
+        .preview-thumbnail.active {
+            border-color: #667eea;
+        }
+
+        .preview-thumbnail:hover {
+            border-color: #5a6fd8;
+        }
+
+        .preview-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+/* Preview Gallery Styles */
+.preview-gallery {
+    position: relative;
+    margin-bottom: 1rem;
     text-align: center;
 }
 
-.profile-pic-preview {
+.preview-image {
+    max-width: 100%;
+    max-height: 500px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 10px;
     margin-bottom: 1rem;
-}
-
-.profile-preview-image {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid #667eea;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.profile-preview-image:hover {
-    border-color: #5a6fd8;
-    transform: scale(1.05);
-}
-
-.form-control-file {
-    width: 100%;
-    padding: 0.5rem;
     border: 1px solid #ddd;
-    border-radius: 5px;
     background: #f8f9fa;
 }
 
-.file-help {
-    display: block;
-    margin-top: 0.5rem;
-    color: #666;
-    font-size: 0.8rem;
+.preview-thumbnails {
+    display: flex;
+    gap: 8px;
+    margin: 15px 0;
+    overflow-x: auto;
+    padding: 10px 0;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
-/* Remove current profile picture button */
-.btn-remove-pic {
-    background: #dc3545;
+.preview-thumbnail {
+    width: 60px;
+    height: 60px;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.3s;
+}
+
+.preview-thumbnail.active {
+    border-color: #667eea;
+}
+
+.preview-thumbnail:hover {
+    border-color: #5a6fd8;
+}
+
+.preview-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.preview-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 0 10px;
+}
+
+.preview-nav button {
+    background: #667eea;
     color: white;
     border: none;
-    padding: 0.3rem 0.8rem;
-    border-radius: 4px;
+    padding: 8px 15px;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 0.8rem;
-    margin-top: 0.5rem;
+    font-size: 14px;
+    transition: background 0.3s;
 }
 
-.btn-remove-pic:hover {
-    background: #c82333;
+.preview-nav button:hover {
+    background: #5a6fd8;
 }
+
+.preview-nav button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Preview Info Styles */
+.preview-info {
+    padding: 1rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-top: 1rem;
+}
+
+.preview-info h4 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.preview-info .price {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+}
+
+.preview-info .description {
+    color: #666;
+    line-height: 1.4;
+    margin-bottom: 0;
+}
+
+/* Image Preview Modal Styles */
+.image-modal-content {
+    max-width: 800px;
+    max-height: 90vh;
+}
+        .preview-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding: 0 10px;
+        }
+
+        .preview-nav button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .preview-nav button:hover {
+            background: #5a6fd8;
+        }
+
+        .preview-nav button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Preview Info Styles */
+        .preview-info {
+            padding: 1rem;
+            text-align: center;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+
+        .preview-info h4 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .preview-info .price {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .preview-info .description {
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 0;
+        }
+
+        /* Profile Picture Styles */
+        .profile-pic-container {
+            text-align: center;
+        }
+
+        .profile-pic-preview {
+            margin-bottom: 1rem;
+        }
+
+        .profile-preview-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .profile-preview-image:hover {
+            border-color: #5a6fd8;
+            transform: scale(1.05);
+        }
+
+        .form-control-file {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+
+        .file-help {
+            display: block;
+            margin-top: 0.5rem;
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        /* Remove current profile picture button */
+        .btn-remove-pic {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .btn-remove-pic:hover {
+            background: #c82333;
+        }
+
         nav ul {
             list-style: none;
             display: flex;
@@ -183,126 +407,129 @@
             max-width: 1200px;
             margin: 0 auto;
         }
-/* Enhanced disabled states for login required */
-.btn-cart.disabled-login, .btn-wishlist.disabled-login {
-    background: #6c757d !important;
-    cursor: not-allowed;
-    opacity: 0.7;
-    transform: none !important;
-}
 
-.btn-cart.disabled-login:hover, .btn-wishlist.disabled-login:hover {
-    opacity: 0.7;
-    transform: none !important;
-}
+        /* Enhanced disabled states for login required */
+        .btn-cart.disabled-login, .btn-wishlist.disabled-login {
+            background: #6c757d !important;
+            cursor: not-allowed;
+            opacity: 0.7;
+            transform: none !important;
+        }
 
-.login-required-message {
-    text-align: center;
-    margin-top: 1rem;
-    padding: 1rem;
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
-    border-radius: 5px;
-}
+        .btn-cart.disabled-login:hover, .btn-wishlist.disabled-login:hover {
+            opacity: 0.7;
+            transform: none !important;
+        }
 
-.login-required-message p {
-    color: #856404;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-/* Profile completion required states */
-.btn-cart.disabled-profile, .btn-wishlist.disabled-profile {
-    background: #ffc107 !important;
-    color: #212529 !important;
-    cursor: not-allowed;
-    opacity: 0.9;
-    transform: none !important;
-}
+        .login-required-message {
+            text-align: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+        }
 
-.btn-cart.disabled-profile:hover, .btn-wishlist.disabled-profile:hover {
-    opacity: 0.9;
-    transform: none !important;
-    background: #ffc107 !important;
-}
+        .login-required-message p {
+            color: #856404;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
 
-.profile-required-message {
-    text-align: center;
-    margin-top: 1rem;
-    padding: 1rem;
-    background: #d1ecf1;
-    border: 1px solid #bee5eb;
-    border-radius: 5px;
-}
+        /* Profile completion required states */
+        .btn-cart.disabled-profile, .btn-wishlist.disabled-profile {
+            background: #ffc107 !important;
+            color: #212529 !important;
+            cursor: not-allowed;
+            opacity: 0.9;
+            transform: none !important;
+        }
 
-.profile-required-message p {
-    color: #0c5460;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
+        .btn-cart.disabled-profile:hover, .btn-wishlist.disabled-profile:hover {
+            opacity: 0.9;
+            transform: none !important;
+            background: #ffc107 !important;
+        }
 
-.btn-profile-small {
-    background: #17a2b8;
-    color: white;
-    padding: 0.4rem 1rem;
-    border-radius: 4px;
-    text-decoration: none;
-    font-size: 0.8rem;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-}
+        .profile-required-message {
+            text-align: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 5px;
+        }
 
-.btn-profile-small:hover {
-    background: #138496;
-    color: white;
-}
-.btn-login-small {
-    background: #667eea;
-    color: white;
-    padding: 0.4rem 1rem;
-    border-radius: 4px;
-    text-decoration: none;
-    font-size: 0.8rem;
-    font-weight: bold;
-    display: inline-block;
-}
+        .profile-required-message p {
+            color: #0c5460;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
 
-.btn-login-small:hover {
-    background: #5a6fd8;
-    color: white;
-}
+        .btn-profile-small {
+            background: #17a2b8;
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
 
-/* Tooltip styles for better UX */
-[title] {
-    position: relative;
-}
+        .btn-profile-small:hover {
+            background: #138496;
+            color: white;
+        }
 
-[title]:hover::after {
-    content: attr(title);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #333;
-    color: white;
-    padding: 0.5rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    white-space: nowrap;
-    z-index: 1000;
-    margin-bottom: 5px;
-}
+        .btn-login-small {
+            background: #667eea;
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+        }
 
-[title]:hover::before {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-top-color: #333;
-    margin-bottom: -5px;
-}
+        .btn-login-small:hover {
+            background: #5a6fd8;
+            color: white;
+        }
+
+        /* Tooltip styles for better UX */
+        [title] {
+            position: relative;
+        }
+
+        [title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 5px;
+        }
+
+        [title]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #333;
+            margin-bottom: -5px;
+        }
 
         .section-title {
             text-align: center;
@@ -510,174 +737,175 @@
             align-items: center;
             justify-content: center;
         }
+
         /* Profile Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
-}
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
 
-.modal-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #f8f9fa;
-}
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
 
-.modal-header h3 {
-    color: #333;
-    margin: 0;
-}
+        .modal-header h3 {
+            color: #333;
+            margin: 0;
+        }
 
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #666;
-    padding: 0;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.close-btn:hover {
-    color: #333;
-    background: #f8f9fa;
-    border-radius: 50%;
-}
+        .close-btn:hover {
+            color: #333;
+            background: #f8f9fa;
+            border-radius: 50%;
+        }
 
-.form-group {
-    margin-bottom: 1.5rem;
-}
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
 
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: bold;
-    color: #333;
-}
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
 
-.form-control {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1rem;
-    transition: border-color 0.3s;
-}
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
 
-.form-control:focus {
-    outline: none;
-    border-color: #667eea;
-}
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
 
-.form-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-    margin-top: 2rem;
-}
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
 
-.btn-cancel {
-    background: #6c757d;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-}
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
 
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    color: white;
-    flex-wrap: wrap;
-}
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: white;
+            flex-wrap: wrap;
+        }
 
-@media (max-width: 768px) {
-    .user-info {
-        justify-content: center;
-        gap: 0.5rem;
-    }
-    
-    .user-info > * {
-        margin: 0.2rem;
-    }
-}
+        @media (max-width: 768px) {
+            .user-info {
+                justify-content: center;
+                gap: 0.5rem;
+            }
+            
+            .user-info > * {
+                margin: 0.2rem;
+            }
+        }
 
-.btn-save {
-    background: #28a745;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-}
+        .btn-save {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
 
-.btn-cancel:hover {
-    background: #5a6268;
-}
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
 
-.btn-save:hover {
-    background: #218838;
-}
+        .btn-save:hover {
+            background: #218838;
+        }
 
-.btn-profile {
-    background: #17a2b8;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9rem;
-}
+        .btn-profile {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
 
-.btn-profile:hover {
-    background: #138496;
-}
+        .btn-profile:hover {
+            background: #138496;
+        }
 
-/* Responsive modal */
-@media (max-width: 768px) {
-    .modal-content {
-        width: 95%;
-        margin: 1rem;
-        padding: 1.5rem;
-    }
-    
-    .form-actions {
-        flex-direction: column;
-    }
-    
-    .btn-cancel, .btn-save {
-        width: 100%;
-    }
-}
+        /* Responsive modal */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn-cancel, .btn-save {
+                width: 100%;
+            }
+        }
 
         /* Responsive Design */
         @media (max-width: 768px) {
@@ -773,52 +1001,27 @@
             max-width: 800px;
             max-height: 90vh;
         }
-
-        .preview-image {
-            width: 100%;
-            max-height: 500px;
-            object-fit: contain;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-        }
-
-        .preview-info {
-            padding: 1rem;
-            text-align: center;
-        }
-
-        .preview-info h4 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            color: #333;
-        }
-
-        .preview-info p {
-            margin-bottom: 0.5rem;
-            color: #666;
-        }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <!-- Header -->
-<header>
-    <div class="nav-container">
-        <div class="logo">Fine<span>Graphics</span></div>
-        <nav>
-            <ul>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#designs">Designs</a></li>
-                <li><a href="about.html">About</a></li>
-                <li><a href="contact.html">Contact</a></li>
-                <li><a href="orders.html">My Orders</a></li>
-            </ul>
-        </nav>
-        <div class="auth-buttons" id="authButtons">
-            <!-- Will be populated by JavaScript -->
+    <header>
+        <div class="nav-container">
+            <div class="logo">Fine<span>Graphics</span></div>
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#designs">Designs</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons" id="authButtons">
+                <!-- Will be populated by JavaScript -->
+            </div>
         </div>
-    </div>
-</header>
+    </header>
 
     <!-- Hero Section -->
     <section class="hero" id="home">
@@ -856,7 +1059,7 @@
         let currentUser = null;
         let cart = [];
         let wishlist = [];
-        let designs = [];
+        let designs = []; // Added for image preview
 
         // Initialize the application
         async function initApp() {
@@ -869,188 +1072,82 @@
             updateCartBadges();
         }
 
-// Profile Picture Variables
-let profilePicBase64 = "";
-let currentProfilePicFile = null;
+        // Profile Picture Variables
+        let profilePicBase64 = "";
+        let currentProfilePicFile = null;
 
-// Preview profile image
-// Profile Picture Variables
-// Preview profile image
-function previewProfileImage(input) {
-    const file = input.files[0];
-    const preview = document.getElementById('profilePicPreview');
-    
-    if (file) {
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            showNotification('Please select an image file (JPG, PNG, etc.)', 'remove');
-            input.value = '';
-            return;
-        }
-        
-        // Validate file size (max 2MB)
-        if (file.size > 2 * 1024 * 1024) {
-            showNotification('Image size should be less than 2MB', 'remove');
-            input.value = '';
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            profilePicBase64 = e.target.result; // This is the base64 data URL
-            preview.src = profilePicBase64;
+        // Preview profile image
+        function previewProfileImage(input) {
+            const file = input.files[0];
+            const preview = document.getElementById('profilePicPreview');
             
-            // Show remove button
-            showRemoveProfilePicButton();
-        };
-        reader.readAsDataURL(file);
-    } else {
-        profilePicBase64 = "";
-        // Reset to current user's profile pic or default
-        preview.src = currentUser?.profile_pic || 'https://via.placeholder.com/150?text=No+Image';
-        hideRemoveProfilePicButton();
-    }
-}
-
-// Show remove profile picture button
-function showRemoveProfilePicButton() {
-    let removeBtn = document.querySelector('.btn-remove-pic');
-    if (!removeBtn) {
-        removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.className = 'btn-remove-pic';
-        removeBtn.textContent = '🗑️ Remove Photo';
-        removeBtn.onclick = removeProfilePicture;
-        document.querySelector('.profile-pic-container').appendChild(removeBtn);
-    }
-}
-
-// Hide remove profile picture button
-function hideRemoveProfilePicButton() {
-    const removeBtn = document.querySelector('.btn-remove-pic');
-    if (removeBtn) {
-        removeBtn.remove();
-    }
-}
-
-// Remove profile picture
-function removeProfilePicture() {
-    const input = document.getElementById('profilePicInput');
-    const preview = document.getElementById('profilePicPreview');
-    
-    input.value = '';
-    profilePicBase64 = "";
-    
-    // Set to default avatar
-    preview.src = 'https://via.placeholder.com/150?text=No+Image';
-    
-    hideRemoveProfilePicButton();
-    showNotification('Profile picture removed', 'remove');
-}
-
-// Open profile modal with current data
-function openUpdateProfileModal() {
-    const modal = document.getElementById('profileModal');
-    modal.style.display = 'flex';
-    
-    // Reset profile pic variables
-    profilePicBase64 = "";
-    
-    // Populate current user data
-    if (currentUser) {
-        document.getElementById('profileAddress').value = currentUser.address || '';
-        document.getElementById('profileMobile').value = currentUser.mobile || '';
-        document.getElementById('profileDistrict').value = currentUser.district || '';
-        
-        // Set current profile picture
-        const preview = document.getElementById('profilePicPreview');
-        // Use the profile_pic URL from the database, not base64
-        preview.src = currentUser.profile_pic || 'https://via.placeholder.com/150?text=No+Image';
-        
-        // Show/hide remove button based on existing profile pic
-        if (currentUser.profile_pic && !currentUser.profile_pic.includes('via.placeholder.com')) {
-            showRemoveProfilePicButton();
-        } else {
-            hideRemoveProfilePicButton();
+            if (file) {
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    showNotification('Please select an image file (JPG, PNG, etc.)', 'remove');
+                    input.value = '';
+                    return;
+                }
+                
+                // Validate file size (max 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    showNotification('Image size should be less than 2MB', 'remove');
+                    input.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profilePicBase64 = e.target.result; // This is the base64 data URL
+                    preview.src = profilePicBase64;
+                    
+                    // Show remove button
+                    showRemoveProfilePicButton();
+                };
+                reader.readAsDataURL(file);
+            } else {
+                profilePicBase64 = "";
+                // Reset to current user's profile pic or default
+                preview.src = currentUser?.profile_pic || 'https://via.placeholder.com/150?text=No+Image';
+                hideRemoveProfilePicButton();
+            }
         }
-    }
-    
-    // Clear file input
-    document.getElementById('profilePicInput').value = '';
-    
-    // Add form submit handler
-    document.getElementById('profileForm').onsubmit = handleProfileUpdate;
-}
 
-// Show remove profile picture button
-function showRemoveProfilePicButton() {
-    let removeBtn = document.querySelector('.btn-remove-pic');
-    if (!removeBtn) {
-        removeBtn = document.createElement('button');
-        removeBtn.className = 'btn-remove-pic';
-        removeBtn.textContent = '🗑️ Remove Photo';
-        removeBtn.onclick = removeProfilePicture;
-        document.querySelector('.profile-pic-container').appendChild(removeBtn);
-    }
-}
-
-// Hide remove profile picture button
-function hideRemoveProfilePicButton() {
-    const removeBtn = document.querySelector('.btn-remove-pic');
-    if (removeBtn) {
-        removeBtn.remove();
-    }
-}
-
-// Remove profile picture
-function removeProfilePicture() {
-    const input = document.getElementById('profilePicInput');
-    const preview = document.getElementById('profilePicPreview');
-    
-    input.value = '';
-    profilePicBase64 = "";
-    currentProfilePicFile = null;
-    
-    // Set to default avatar
-    preview.src = 'https://via.placeholder.com/150?text=No+Image';
-    
-    hideRemoveProfilePicButton();
-    showNotification('Profile picture removed', 'remove');
-}
-
-// Open profile modal with current data
-function openUpdateProfileModal() {
-    const modal = document.getElementById('profileModal');
-    modal.style.display = 'flex';
-    
-    // Reset profile pic variables
-    profilePicBase64 = "";
-    currentProfilePicFile = null;
-    
-    // Populate current user data
-    if (currentUser) {
-        document.getElementById('profileAddress').value = currentUser.address || '';
-        document.getElementById('profileMobile').value = currentUser.mobile || '';
-        document.getElementById('profileDistrict').value = currentUser.district || '';
-        
-        // Set current profile picture
-        const preview = document.getElementById('profilePicPreview');
-        preview.src = currentUser.profile_pic || 'https://via.placeholder.com/150?text=No+Image';
-        
-        // Show/hide remove button based on existing profile pic
-        if (currentUser.profile_pic && currentUser.profile_pic !== 'https://via.placeholder.com/150?text=No+Image') {
-            showRemoveProfilePicButton();
-        } else {
-            hideRemoveProfilePicButton();
+        // Show remove profile picture button
+        function showRemoveProfilePicButton() {
+            let removeBtn = document.querySelector('.btn-remove-pic');
+            if (!removeBtn) {
+                removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'btn-remove-pic';
+                removeBtn.textContent = '🗑️ Remove Photo';
+                removeBtn.onclick = removeProfilePicture;
+                document.querySelector('.profile-pic-container').appendChild(removeBtn);
+            }
         }
-    }
-    
-    // Clear file input
-    document.getElementById('profilePicInput').value = '';
-    
-    // Add form submit handler
-    document.getElementById('profileForm').onsubmit = handleProfileUpdate;
-}
+
+        // Hide remove profile picture button
+        function hideRemoveProfilePicButton() {
+            const removeBtn = document.querySelector('.btn-remove-pic');
+            if (removeBtn) {
+                removeBtn.remove();
+            }
+        }
+
+        // Remove profile picture
+        function removeProfilePicture() {
+            const input = document.getElementById('profilePicInput');
+            const preview = document.getElementById('profilePicPreview');
+            
+            input.value = '';
+            profilePicBase64 = "";
+            
+            // Set to default avatar
+            preview.src = 'https://via.placeholder.com/150?text=No+Image';
+            
+            hideRemoveProfilePicButton();
+            showNotification('Profile picture removed', 'remove');
+        }
 
         // Check if user is logged in
         async function checkLoginStatus() {
@@ -1131,29 +1228,29 @@ function openUpdateProfileModal() {
             }
         }
 
-// Check if user profile is complete
-function isProfileComplete() {
-    if (!currentUser) return false;
-    
-    return currentUser.address && 
-           currentUser.mobile && 
-           currentUser.district &&
-           currentUser.address.trim() !== '' &&
-           currentUser.mobile.trim() !== '' &&
-           currentUser.district.trim() !== '';
-}
-
-// Show profile completion required message
-function showProfileRequired() {
-    showNotification('📝 Please complete your profile first', 'remove');
-    
-    // Auto-open profile modal after 1 second
-    setTimeout(() => {
-        if (confirm('You need to complete your profile before shopping. Complete it now?')) {
-            openUpdateProfileModal();
+        // Check if user profile is complete
+        function isProfileComplete() {
+            if (!currentUser) return false;
+            
+            return currentUser.address && 
+                   currentUser.mobile && 
+                   currentUser.district &&
+                   currentUser.address.trim() !== '' &&
+                   currentUser.mobile.trim() !== '' &&
+                   currentUser.district.trim() !== '';
         }
-    }, 1000);
-}
+
+        // Show profile completion required message
+        function showProfileRequired() {
+            showNotification('📝 Please complete your profile first', 'remove');
+            
+            // Auto-open profile modal after 1 second
+            setTimeout(() => {
+                if (confirm('You need to complete your profile before shopping. Complete it now?')) {
+                    openUpdateProfileModal();
+                }
+            }, 1000);
+        }
 
         // Render designs to the page - UPDATED with profile completion check AND image preview
         function renderDesigns(designsArray) {
@@ -1207,6 +1304,7 @@ function showProfileRequired() {
 
                 // Create a safe design object for the preview function
                 const safeDesign = {
+                    id: design.id,
                     name: design.name.replace(/'/g, "\\'"),
                     price: design.price,
                     description: (design.description || 'No description available.').replace(/'/g, "\\'"),
@@ -1215,11 +1313,11 @@ function showProfileRequired() {
                 };
 
                 designsHTML += `
-                    <div class="design-card" data-design-id="${design.id}">
-                        <img src="${imageSrc}" 
-                             alt="${design.name}" 
-                             class="design-image" 
-                             onclick="openImagePreview('${encodeURIComponent(JSON.stringify(safeDesign))}')">
+    <div class="design-card" data-design-id="${design.id}">
+        <img src="${imageSrc}" 
+             alt="${design.name}" 
+             class="design-image" 
+             onclick="openImagePreview('${encodeURIComponent(JSON.stringify(safeDesign))}')">
                         <div class="design-info">
                             <div class="design-name">${design.name}</div>
                             <div class="design-category">${design.category || 'General'}</div>
@@ -1257,74 +1355,74 @@ function showProfileRequired() {
             container.innerHTML = designsHTML;
         }
 
-// Cart functionality - UPDATED with profile completion check
-function addToCart(designName, price, image) {
-    if (!currentUser) {
-        showLoginRequired();
-        return;
-    }
-    
-    if (!isProfileComplete()) {
-        showProfileRequired();
-        return;
-    }
+        // Cart functionality - UPDATED with profile completion check
+        function addToCart(designName, price, image) {
+            if (!currentUser) {
+                showLoginRequired();
+                return;
+            }
+            
+            if (!isProfileComplete()) {
+                showProfileRequired();
+                return;
+            }
 
-    const existingItemIndex = cart.findIndex(item => item.name === designName);
-    
-    if (existingItemIndex !== -1) {
-        // Item already in cart - REMOVE it
-        cart.splice(existingItemIndex, 1);
-        showNotification(`🗑️ ${designName} removed from cart!`, 'remove');
-    } else {
-        // Item not in cart - ADD it
-        cart.push({
-            name: designName,
-            price: price,
-            quantity: 1,
-            image: image
-        });
-        showNotification(`✅ ${designName} added to cart!`, 'success');
-    }
+            const existingItemIndex = cart.findIndex(item => item.name === designName);
+            
+            if (existingItemIndex !== -1) {
+                // Item already in cart - REMOVE it
+                cart.splice(existingItemIndex, 1);
+                showNotification(`🗑️ ${designName} removed from cart!`, 'remove');
+            } else {
+                // Item not in cart - ADD it
+                cart.push({
+                    name: designName,
+                    price: price,
+                    quantity: 1,
+                    image: image
+                });
+                showNotification(`✅ ${designName} added to cart!`, 'success');
+            }
 
-    saveCartToStorage();
-    updateCartBadges();
-    renderDesigns(designs);
-    syncCartToDatabase();
-}
+            saveCartToStorage();
+            updateCartBadges();
+            renderDesigns(designs);
+            syncCartToDatabase();
+        }
 
-// Wishlist functionality - UPDATED with profile completion check
-function addToWishlist(designName, price, image) {
-    if (!currentUser) {
-        showLoginRequired();
-        return;
-    }
-    
-    if (!isProfileComplete()) {
-        showProfileRequired();
-        return;
-    }
+        // Wishlist functionality - UPDATED with profile completion check
+        function addToWishlist(designName, price, image) {
+            if (!currentUser) {
+                showLoginRequired();
+                return;
+            }
+            
+            if (!isProfileComplete()) {
+                showProfileRequired();
+                return;
+            }
 
-    const existingItemIndex = wishlist.findIndex(item => item.name === designName);
-    
-    if (existingItemIndex !== -1) {
-        // Item already in wishlist - REMOVE it
-        wishlist.splice(existingItemIndex, 1);
-        showNotification(`💔 ${designName} removed from wishlist!`, 'remove');
-    } else {
-        // Item not in wishlist - ADD it
-        wishlist.push({
-            name: designName,
-            price: price,
-            image: image
-        });
-        showNotification(`❤️ ${designName} added to wishlist!`, 'success');
-    }
+            const existingItemIndex = wishlist.findIndex(item => item.name === designName);
+            
+            if (existingItemIndex !== -1) {
+                // Item already in wishlist - REMOVE it
+                wishlist.splice(existingItemIndex, 1);
+                showNotification(`💔 ${designName} removed from wishlist!`, 'remove');
+            } else {
+                // Item not in wishlist - ADD it
+                wishlist.push({
+                    name: designName,
+                    price: price,
+                    image: image
+                });
+                showNotification(`❤️ ${designName} added to wishlist!`, 'success');
+            }
 
-    saveWishlistToStorage();
-    updateCartBadges();
-    renderDesigns(designs);
-    syncWishlistToDatabase();
-}
+            saveWishlistToStorage();
+            updateCartBadges();
+            renderDesigns(designs);
+            syncWishlistToDatabase();
+        }
 
         // Sync ONLY cart to database (skip wishlist)
         async function syncCartToDatabase() {
@@ -1457,17 +1555,17 @@ function addToWishlist(designName, price, image) {
             }
         }
 
-// Show login required message
-function showLoginRequired() {
-    showNotification('🔐 Please login to use this feature', 'remove');
-    
-    // Optional: Auto-redirect to login after 2 seconds
-    setTimeout(() => {
-        if (confirm('You need to login to continue. Go to login page?')) {
-            window.location.href = 'login.html';
+        // Show login required message
+        function showLoginRequired() {
+            showNotification('🔐 Please login to use this feature', 'remove');
+            
+            // Optional: Auto-redirect to login after 2 seconds
+            setTimeout(() => {
+                if (confirm('You need to login to continue. Go to login page?')) {
+                    window.location.href = 'login.html';
+                }
+            }, 2000);
         }
-    }, 2000);
-}
 
         // Update authentication buttons
         function updateAuthButtons() {
@@ -1499,137 +1597,137 @@ function showLoginRequired() {
             }
         }
 
-// Profile Modal Functions
-function openUpdateProfileModal() {
-    const modal = document.getElementById('profileModal');
-    modal.style.display = 'flex';
-    
-    // Populate current user data
-    if (currentUser) {
-        document.getElementById('profileAddress').value = currentUser.address || '';
-        document.getElementById('profileMobile').value = currentUser.mobile || '';
-        document.getElementById('profileDistrict').value = currentUser.district || '';
-    }
-    
-    // Add form submit handler
-    document.getElementById('profileForm').onsubmit = handleProfileUpdate;
-}
-
-function closeProfileModal() {
-    const modal = document.getElementById('profileModal');
-    modal.style.display = 'none';
-}
-
-async function handleProfileUpdate(event) {
-    event.preventDefault();
-    
-    if (!currentUser) {
-        showNotification('Please login to update profile', 'remove');
-        return;
-    }
-    
-    const address = document.getElementById('profileAddress').value.trim();
-    const mobile = document.getElementById('profileMobile').value.trim();
-    const district = document.getElementById('profileDistrict').value;
-    
-    // Validation
-    if (!address) {
-        showNotification('Please enter your address', 'remove');
-        return;
-    }
-    
-    if (!mobile) {
-        showNotification('Please enter your mobile number', 'remove');
-        return;
-    }
-    
-    if (!/^\d{10}$/.test(mobile)) {
-        showNotification('Please enter a valid 10-digit mobile number', 'remove');
-        return;
-    }
-    
-    if (!district) {
-        showNotification('Please select your district', 'remove');
-        return;
-    }
-    
-    try {
-        const saveBtn = document.querySelector('.btn-save');
-        saveBtn.textContent = '💾 Saving...';
-        saveBtn.disabled = true;
-        
-        // Prepare update data - send base64 only if a new picture was selected
-        const updateData = {
-            username: currentUser.username,
-            address: address,
-            mobile: mobile,
-            district: district,
-            profilePic: profilePicBase64 || currentUser.profile_pic || ""
-        };
-        
-        console.log('Updating profile:', {
-            ...updateData,
-            profilePic: updateData.profilePic ? `Base64 data (${updateData.profilePic.length} chars)` : 'No image'
-        });
-        
-        const response = await fetch('/updateProfile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updateData)
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            // Update local storage with new data
-            currentUser.address = result.address;
-            currentUser.mobile = result.mobile;
-            currentUser.district = result.district;
-            currentUser.profile_pic = result.profile_pic; // This should be a URL from the backend
+        // Profile Modal Functions
+        function openUpdateProfileModal() {
+            const modal = document.getElementById('profileModal');
+            modal.style.display = 'flex';
             
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            // Populate current user data
+            if (currentUser) {
+                document.getElementById('profileAddress').value = currentUser.address || '';
+                document.getElementById('profileMobile').value = currentUser.mobile || '';
+                document.getElementById('profileDistrict').value = currentUser.district || '';
+            }
             
-            showNotification('✅ Profile updated successfully!', 'success');
-            closeProfileModal();
-            
-            // Refresh designs to update button states and update user avatar
-            renderDesigns(designs);
-            updateAuthButtons(); // This will update the avatar in navigation
-        } else {
-            throw new Error(result.error || 'Failed to update profile');
+            // Add form submit handler
+            document.getElementById('profileForm').onsubmit = handleProfileUpdate;
         }
-        
-    } catch (error) {
-        console.error('Profile update error:', error);
-        showNotification(`❌ Error: ${error.message}`, 'remove');
-    } finally {
-        const saveBtn = document.querySelector('.btn-save');
-        saveBtn.textContent = '💾 Save Profile';
-        saveBtn.disabled = false;
-    }
-}
 
-// Close modal when clicking outside
-document.addEventListener('click', function(event) {
-    const modal = document.getElementById('profileModal');
-    if (event.target === modal) {
-        closeProfileModal();
-    }
-});
+        function closeProfileModal() {
+            const modal = document.getElementById('profileModal');
+            modal.style.display = 'none';
+        }
 
-// Close modal with Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeProfileModal();
-    }
-});
-
-// Logout function
-function logout() {
-    // Sync data before logout
-    syncCartToDatabase();
-    syncWishlistToDatabase();
+        async function handleProfileUpdate(event) {
+            event.preventDefault();
             
+            if (!currentUser) {
+                showNotification('Please login to update profile', 'remove');
+                return;
+            }
+            
+            const address = document.getElementById('profileAddress').value.trim();
+            const mobile = document.getElementById('profileMobile').value.trim();
+            const district = document.getElementById('profileDistrict').value;
+            
+            // Validation
+            if (!address) {
+                showNotification('Please enter your address', 'remove');
+                return;
+            }
+            
+            if (!mobile) {
+                showNotification('Please enter your mobile number', 'remove');
+                return;
+            }
+            
+            if (!/^\d{10}$/.test(mobile)) {
+                showNotification('Please enter a valid 10-digit mobile number', 'remove');
+                return;
+            }
+            
+            if (!district) {
+                showNotification('Please select your district', 'remove');
+                return;
+            }
+            
+            try {
+                const saveBtn = document.querySelector('.btn-save');
+                saveBtn.textContent = '💾 Saving...';
+                saveBtn.disabled = true;
+                
+                // Prepare update data - send base64 only if a new picture was selected
+                const updateData = {
+                    username: currentUser.username,
+                    address: address,
+                    mobile: mobile,
+                    district: district,
+                    profilePic: profilePicBase64 || currentUser.profile_pic || ""
+                };
+                
+                console.log('Updating profile:', {
+                    ...updateData,
+                    profilePic: updateData.profilePic ? `Base64 data (${updateData.profilePic.length} chars)` : 'No image'
+                });
+                
+                const response = await fetch('/updateProfile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Update local storage with new data
+                    currentUser.address = result.address;
+                    currentUser.mobile = result.mobile;
+                    currentUser.district = result.district;
+                    currentUser.profile_pic = result.profile_pic; // This should be a URL from the backend
+                    
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    
+                    showNotification('✅ Profile updated successfully!', 'success');
+                    closeProfileModal();
+                    
+                    // Refresh designs to update button states and update user avatar
+                    renderDesigns(designs);
+                    updateAuthButtons(); // This will update the avatar in navigation
+                } else {
+                    throw new Error(result.error || 'Failed to update profile');
+                }
+                
+            } catch (error) {
+                console.error('Profile update error:', error);
+                showNotification(`❌ Error: ${error.message}`, 'remove');
+            } finally {
+                const saveBtn = document.querySelector('.btn-save');
+                saveBtn.textContent = '💾 Save Profile';
+                saveBtn.disabled = false;
+            }
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('profileModal');
+            if (event.target === modal) {
+                closeProfileModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeProfileModal();
+            }
+        });
+
+        // Logout function
+        function logout() {
+            // Sync data before logout
+            syncCartToDatabase();
+            syncWishlistToDatabase();
+                    
             localStorage.removeItem('currentUser');
             currentUser = null;
             cart = [];
@@ -1689,30 +1787,244 @@ function logout() {
             renderDesigns(designs);
         }
 
-        // Image preview functionality
+        // Image Preview Functions - FIXED VERSION
         function openImagePreview(encodedDesign) {
             const design = JSON.parse(decodeURIComponent(encodedDesign));
-            const modal = document.getElementById('imagePreviewModal');
-            const imageSrc = design.image_data ? 
-                `data:${design.image_type};base64,${design.image_data}` : 
-                'https://via.placeholder.com/600x400?text=No+Image';
+            currentPreviewDesign = design; // Store globally for access in other functions
             
-            document.getElementById('previewImage').src = imageSrc;
+            const modal = document.getElementById('imagePreviewModal');
+            
+            // Set basic design info
             document.getElementById('previewDesignName').textContent = design.name;
             document.getElementById('previewDesignPrice').textContent = `₹${design.price}`;
-            document.getElementById('previewDesignDescription').textContent = design.description;
+            document.getElementById('previewDesignDescription').textContent = design.description || 'No description available.';
+            
+            // Load preview images for this design
+            loadDesignPreviewsForCustomer(design.id);
             
             modal.style.display = 'flex';
+        }
+
+        // Load preview images for customer view - FIXED VERSION
+        async function loadDesignPreviewsForCustomer(designId) {
+            try {
+                const response = await fetch(`/admin/designs/${designId}/previews`);
+                const result = await response.json();
+                
+                const previewContainer = document.getElementById('previewThumbnails');
+                const mainImageElem = document.getElementById('previewImage');
+                
+                // Get main image from currentPreviewDesign
+                const mainImageSrc = currentPreviewDesign.image_data ? 
+                    `data:${currentPreviewDesign.image_type};base64,${currentPreviewDesign.image_data}` : 
+                    'https://via.placeholder.com/600x400?text=No+Image';
+                
+                // Set main image
+                mainImageElem.src = mainImageSrc;
+                mainImageElem.alt = currentPreviewDesign.name;
+                
+                // Clear existing thumbnails
+                previewContainer.innerHTML = '';
+                
+                // Add main image as first thumbnail
+                const mainThumb = document.createElement('div');
+                mainThumb.className = 'preview-thumbnail active';
+                mainThumb.innerHTML = `<img src="${mainImageSrc}" alt="Main Image" onclick="switchPreviewImage('${mainImageSrc}', this)">`;
+                previewContainer.appendChild(mainThumb);
+                
+                // Add preview images as thumbnails
+                if (result.success && result.previews.length > 0) {
+                    result.previews.forEach(preview => {
+                        const imageSrc = `data:${preview.preview_type};base64,${preview.preview_data}`;
+                        const thumb = document.createElement('div');
+                        thumb.className = 'preview-thumbnail';
+                        thumb.innerHTML = `<img src="${imageSrc}" alt="Preview" onclick="switchPreviewImage('${imageSrc}', this)">`;
+                        previewContainer.appendChild(thumb);
+                    });
+                }
+                
+                // Show/hide navigation based on number of images
+                updatePreviewNavigation(previewContainer.children.length);
+                
+            } catch (error) {
+                console.error('Error loading preview images:', error);
+                // Fallback to just the main image
+                const mainImageSrc = currentPreviewDesign.image_data ? 
+                    `data:${currentPreviewDesign.image_type};base64,${currentPreviewDesign.image_data}` : 
+                    'https://via.placeholder.com/600x400?text=No+Image';
+                document.getElementById('previewImage').src = mainImageSrc;
+            }
+        }
+// Global variable for current preview design
+let currentPreviewDesign = null;
+
+// Image Preview Functions
+function openImagePreview(encodedDesign) {
+    const design = JSON.parse(decodeURIComponent(encodedDesign));
+    currentPreviewDesign = design; // Store globally for access in other functions
+    
+    const modal = document.getElementById('imagePreviewModal');
+    
+    // Set basic design info
+    document.getElementById('previewDesignName').textContent = design.name;
+    document.getElementById('previewDesignPrice').textContent = `₹${design.price}`;
+    document.getElementById('previewDesignDescription').textContent = design.description || 'No description available.';
+    
+    // Load preview images for this design
+    loadDesignPreviewsForCustomer(design.id);
+    
+    modal.style.display = 'flex';
+}
+
+// Load preview images for customer view
+async function loadDesignPreviewsForCustomer(designId) {
+    try {
+        const response = await fetch(`/admin/designs/${designId}/previews`);
+        const result = await response.json();
+        
+        const previewContainer = document.getElementById('previewThumbnails');
+        const mainImageElem = document.getElementById('previewImage');
+        
+        // Get main image from currentPreviewDesign
+        const mainImageSrc = currentPreviewDesign.image_data ? 
+            `data:${currentPreviewDesign.image_type};base64,${currentPreviewDesign.image_data}` : 
+            'https://via.placeholder.com/600x400?text=No+Image';
+        
+        // Set main image
+        mainImageElem.src = mainImageSrc;
+        mainImageElem.alt = currentPreviewDesign.name;
+        
+        // Clear existing thumbnails
+        previewContainer.innerHTML = '';
+        
+        // Add main image as first thumbnail
+        const mainThumb = document.createElement('div');
+        mainThumb.className = 'preview-thumbnail active';
+        mainThumb.innerHTML = `<img src="${mainImageSrc}" alt="Main Image" onclick="switchPreviewImage('${mainImageSrc}', this)">`;
+        previewContainer.appendChild(mainThumb);
+        
+        // Add preview images as thumbnails
+        if (result.success && result.previews.length > 0) {
+            result.previews.forEach(preview => {
+                const imageSrc = `data:${preview.preview_type};base64,${preview.preview_data}`;
+                const thumb = document.createElement('div');
+                thumb.className = 'preview-thumbnail';
+                thumb.innerHTML = `<img src="${imageSrc}" alt="Preview" onclick="switchPreviewImage('${imageSrc}', this)">`;
+                previewContainer.appendChild(thumb);
+            });
+        }
+        
+        // Show/hide navigation based on number of images
+        updatePreviewNavigation(previewContainer.children.length);
+        
+    } catch (error) {
+        console.error('Error loading preview images:', error);
+        // Fallback to just the main image
+        const mainImageSrc = currentPreviewDesign.image_data ? 
+            `data:${currentPreviewDesign.image_type};base64,${currentPreviewDesign.image_data}` : 
+            'https://via.placeholder.com/600x400?text=No+Image';
+        document.getElementById('previewImage').src = mainImageSrc;
+    }
+}
+
+// Switch between preview images
+function switchPreviewImage(imageSrc, element) {
+    // Update main image
+    const mainImageElem = document.getElementById('previewImage');
+    mainImageElem.src = imageSrc;
+    
+    // Update active thumbnail
+    document.querySelectorAll('.preview-thumbnail').forEach(thumb => {
+        thumb.classList.remove('active');
+    });
+    element.parentElement.classList.add('active');
+}
+
+// Navigation functions for preview images
+function navigatePreview(direction) {
+    const thumbnails = document.querySelectorAll('.preview-thumbnail');
+    if (thumbnails.length <= 1) return; // No navigation needed if only one image
+    
+    const activeIndex = Array.from(thumbnails).findIndex(thumb => thumb.classList.contains('active'));
+    
+    let newIndex;
+    if (direction === 'next') {
+        newIndex = (activeIndex + 1) % thumbnails.length;
+    } else {
+        newIndex = (activeIndex - 1 + thumbnails.length) % thumbnails.length;
+    }
+    
+    // Simulate click on the new thumbnail
+    const newThumb = thumbnails[newIndex];
+    const img = newThumb.querySelector('img');
+    switchPreviewImage(img.src, img);
+}
+
+// Update preview navigation visibility
+function updatePreviewNavigation(totalImages) {
+    const previewNav = document.getElementById('previewNav');
+    if (previewNav) {
+        previewNav.style.display = totalImages > 1 ? 'flex' : 'none';
+    }
+}
+
+function closeImagePreview() {
+    const modal = document.getElementById('imagePreviewModal');
+    modal.style.display = 'none';
+    currentPreviewDesign = null; // Clear the stored design
+}
+
+// Switch between preview images - FIXED VERSION
+function switchPreviewImage(imageSrc, element) {
+    // Update main image
+    const mainImageElem = document.getElementById('previewImage');
+    mainImageElem.src = imageSrc;
+            
+            // Update active thumbnail
+            document.querySelectorAll('.preview-thumbnail').forEach(thumb => {
+                thumb.classList.remove('active');
+            });
+            element.parentElement.classList.add('active');
+        }
+
+        // Navigation functions for preview images - FIXED VERSION
+        function navigatePreview(direction) {
+            const thumbnails = document.querySelectorAll('.preview-thumbnail');
+            if (thumbnails.length <= 1) return; // No navigation needed if only one image
+            
+            const activeIndex = Array.from(thumbnails).findIndex(thumb => thumb.classList.contains('active'));
+            
+            let newIndex;
+            if (direction === 'next') {
+                newIndex = (activeIndex + 1) % thumbnails.length;
+            } else {
+                newIndex = (activeIndex - 1 + thumbnails.length) % thumbnails.length;
+            }
+            
+            // Simulate click on the new thumbnail
+            const newThumb = thumbnails[newIndex];
+            const img = newThumb.querySelector('img');
+            switchPreviewImage(img.src, img);
+        }
+
+        // Update preview navigation visibility
+        function updatePreviewNavigation(totalImages) {
+            const previewNav = document.getElementById('previewNav');
+            if (previewNav) {
+                previewNav.style.display = totalImages > 1 ? 'flex' : 'none';
+            }
         }
 
         function closeImagePreview() {
             const modal = document.getElementById('imagePreviewModal');
             modal.style.display = 'none';
+            currentPreviewDesign = null; // Clear the stored design
         }
 
         // Initialize the app when page loads
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
+
     <!-- Update Profile Modal -->
     <div id="profileModal" class="modal">
         <div class="modal-content">
@@ -1768,21 +2080,38 @@ function logout() {
     </div>
 
     <!-- Image Preview Modal -->
-    <div id="imagePreviewModal" class="modal">
-        <div class="modal-content image-modal-content">
-            <div class="modal-header">
-                <h3 id="previewTitle">Design Preview</h3>
-                <button class="close-btn" onclick="closeImagePreview()">&times;</button>
-            </div>
-            <div class="modal-body">
+    <!-- Image Preview Modal -->
+<div id="imagePreviewModal" class="modal">
+    <div class="modal-content image-modal-content">
+        <div class="modal-header">
+            <h3 id="previewTitle">Design Preview</h3>
+            <button class="close-btn" onclick="closeImagePreview()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- Preview Gallery -->
+            <div class="preview-gallery">
                 <img id="previewImage" src="" alt="Design Preview" class="preview-image">
-                <div class="preview-info">
-                    <h4 id="previewDesignName"></h4>
-                    <p id="previewDesignPrice"></p>
-                    <p id="previewDesignDescription"></p>
+                
+                <!-- Preview Navigation -->
+                <div class="preview-nav" id="previewNav">
+                    <button onclick="navigatePreview('prev')">← Previous</button>
+                    <button onclick="navigatePreview('next')">Next →</button>
                 </div>
+            </div>
+            
+            <!-- Preview Thumbnails -->
+            <div class="preview-thumbnails" id="previewThumbnails">
+                <!-- Thumbnails will be added here by JavaScript -->
+            </div>
+            
+            <!-- Design Info -->
+            <div class="preview-info">
+                <h4 id="previewDesignName"></h4>
+                <p id="previewDesignPrice" class="price"></p>
+                <p id="previewDesignDescription" class="description"></p>
             </div>
         </div>
     </div>
+</div>
 </body>
 </html>

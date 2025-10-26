@@ -164,10 +164,10 @@ def init_admin_db():
                 print(f"💥 Failed to initialize admin database after {max_retries} attempts: {e}")
                 return False
 
+# In app.py - Update the init_designs_db function
 def init_designs_db():
-    """Initialize designs database with simple structure - GUARANTEED WORKING VERSION"""
+    """Initialize designs database with preview images support - REMOVED DEFAULT PREVIEWS"""
     try:
-        # Remove existing database file to ensure clean creation
         if os.path.exists(DESIGNS_DB):
             os.remove(DESIGNS_DB)
             print(f"🗑 Removed old designs database: {DESIGNS_DB}")
@@ -175,7 +175,7 @@ def init_designs_db():
         conn = sqlite3.connect(DESIGNS_DB)
         cur = conn.cursor()
         
-        # Simple designs table with single image - FORCE CREATE
+        # Main designs table with single primary image
         cur.execute("""CREATE TABLE designs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
@@ -187,7 +187,18 @@ def init_designs_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )""")
         
-        print("🔄 Adding sample designs...")
+        # Preview images table for multiple preview images
+        cur.execute("""CREATE TABLE design_previews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            design_id INTEGER,
+            preview_data TEXT,
+            preview_type TEXT,
+            sort_order INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (design_id) REFERENCES designs (id) ON DELETE CASCADE
+        )""")
+        
+        print("🔄 Adding sample designs WITHOUT previews...")
         sample_designs = [
             ("Business Card Premium", 399.00, "business,professional,card", "Professional business card design with modern layout"),
             ("Flyer Design", 599.00, "marketing,flyer,promotional", "Eye-catching flyer design for promotions"),
@@ -195,20 +206,23 @@ def init_designs_db():
             ("Brochure Design", 899.00, "marketing,brochure,print", "Tri-fold brochure design"),
             ("Social Media Post", 299.00, "social-media,digital,post", "Engaging social media graphics")
         ]
-        
+
         for name, price, tags, description in sample_designs:
             try:
-                # Using placeholder image
                 placeholder_image = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
                 cur.execute("INSERT INTO designs (name, price, tags, description, image_data, image_type) VALUES (?, ?, ?, ?, ?, ?)",
                            (name, price, tags, description, placeholder_image, "image/png"))
+                design_id = cur.lastrowid
                 print(f"✅ Added sample design: {name}")
+                
+                # REMOVED: No default preview images added
+                
             except Exception as e:
-                print(f"⚠ Failed to insert sample design {name}: {e}")
+                print(f"⚠ Failed to insert sample design {name}: {e}")     
         
         conn.commit()
         conn.close()
-        print("✅ Designs database initialized successfully!")
+        print("✅ Designs database WITHOUT default previews initialized successfully!")
         return True
         
     except Exception as e:
@@ -892,6 +906,49 @@ def save_order():
         print(f"💥 ORDER SAVE ERROR: {str(e)}")
         return jsonify({"success": False, "message": f"Error saving order: {str(e)}"}), 500
 
+@app.route('/admin/designs/<int:design_id>/previews-enhanced', methods=['GET'])
+def get_design_previews_enhanced(design_id):
+    """Get all preview images for a design with enhanced data"""
+    try:
+        conn = sqlite3.connect(DESIGNS_DB)
+        cur = conn.cursor()
+        
+        # First verify design exists
+        cur.execute("SELECT name FROM designs WHERE id = ?", (design_id,))
+        design = cur.fetchone()
+        
+        if not design:
+            conn.close()
+            return jsonify({"success": False, "message": "Design not found"}), 404
+        
+        # Get previews
+        cur.execute("""
+            SELECT id, preview_data, preview_type, sort_order 
+            FROM design_previews 
+            WHERE design_id = ? 
+            ORDER BY sort_order
+        """, (design_id,))
+        previews = cur.fetchall()
+        conn.close()
+        
+        preview_list = []
+        for preview in previews:
+            preview_list.append({
+                "id": preview[0],
+                "preview_data": preview[1],
+                "preview_type": preview[2],
+                "sort_order": preview[3]
+            })
+        
+        return jsonify({
+            "success": True, 
+            "previews": preview_list,
+            "design_name": design[0],
+            "total_previews": len(preview_list)
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    
 @app.route('/getOrders/<username>')
 def get_orders(username):
     """Get user orders from orders database"""
@@ -1024,16 +1081,128 @@ def test_designs_access():
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-    
-@app.route('/admin/designs', methods=['GET'])
-def get_all_designs():
-    """Get all designs for admin - CORRECTED VERSION"""
+
+# Add these routes to app.py
+
+@app.route('/admin/designs/<int:design_id>/previews', methods=['GET'])
+def get_design_previews(design_id):
+    """Get all preview images for a design"""
     try:
         conn = sqlite3.connect(DESIGNS_DB)
         cur = conn.cursor()
         
-        # Use the EXACT column names from your SQL
-        cur.execute("SELECT id, name, price, tags, description, image_data, image_type FROM designs ORDER BY created_at DESC")
+        cur.execute("""
+            SELECT id, preview_data, preview_type, sort_order 
+            FROM design_previews 
+            WHERE design_id = ? 
+            ORDER BY sort_order
+        """, (design_id,))
+        previews = cur.fetchall()
+        conn.close()
+        
+        preview_list = []
+        for preview in previews:
+            preview_list.append({
+                "id": preview[0],
+                "preview_data": preview[1],
+                "preview_type": preview[2],
+                "sort_order": preview[3]
+            })
+        
+        return jsonify({"success": True, "previews": preview_list})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/admin/designs/<int:design_id>/previews', methods=['POST'])
+def add_design_preview(design_id):
+    """Add a preview image to a design"""
+    try:
+        data = request.get_json()
+        preview_data = data.get('preview_data')
+        preview_type = data.get('preview_type', 'image/jpeg')
+        
+        if not preview_data:
+            return jsonify({"success": False, "message": "Preview image data is required"}), 400
+        
+        conn = sqlite3.connect(DESIGNS_DB)
+        cur = conn.cursor()
+        
+        # Get current max sort order
+        cur.execute("SELECT MAX(sort_order) FROM design_previews WHERE design_id = ?", (design_id,))
+        max_order = cur.fetchone()[0] or -1
+        
+        # Insert new preview
+        cur.execute("""
+            INSERT INTO design_previews (design_id, preview_data, preview_type, sort_order)
+            VALUES (?, ?, ?, ?)
+        """, (design_id, preview_data, preview_type, max_order + 1))
+        
+        preview_id = cur.lastrowid
+        conn.commit()
+        conn.close()
+        
+        return jsonify({"success": True, "preview_id": preview_id, "message": "Preview image added successfully"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/admin/designs/<int:design_id>/previews/<int:preview_id>', methods=['DELETE'])
+def delete_design_preview(design_id, preview_id):
+    """Delete a preview image"""
+    try:
+        conn = sqlite3.connect(DESIGNS_DB)
+        cur = conn.cursor()
+        
+        cur.execute("DELETE FROM design_previews WHERE id = ? AND design_id = ?", (preview_id, design_id))
+        
+        if cur.rowcount == 0:
+            conn.close()
+            return jsonify({"success": False, "message": "Preview image not found"}), 404
+            
+        conn.commit()
+        conn.close()
+        
+        return jsonify({"success": True, "message": "Preview image deleted successfully"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/admin/designs/<int:design_id>/previews/reorder', methods=['PUT'])
+def reorder_previews(design_id):
+    """Reorder preview images"""
+    try:
+        data = request.get_json()
+        new_order = data.get('order', [])  # List of preview IDs in new order
+        
+        conn = sqlite3.connect(DESIGNS_DB)
+        cur = conn.cursor()
+        
+        for sort_order, preview_id in enumerate(new_order):
+            cur.execute("UPDATE design_previews SET sort_order = ? WHERE id = ? AND design_id = ?", 
+                       (sort_order, preview_id, design_id))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({"success": True, "message": "Preview order updated successfully"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    
+# In app.py - Update the get_all_designs function
+@app.route('/admin/designs', methods=['GET'])
+def get_all_designs():
+    """Get all designs for admin - WITH PREVIEW COUNTS"""
+    try:
+        conn = sqlite3.connect(DESIGNS_DB)
+        cur = conn.cursor()
+        
+        # Get designs with preview counts
+        cur.execute("""
+            SELECT d.id, d.name, d.price, d.tags, d.description, d.image_data, d.image_type,
+                   COUNT(dp.id) as preview_count
+            FROM designs d
+            LEFT JOIN design_previews dp ON d.id = dp.design_id
+            GROUP BY d.id
+            ORDER BY d.created_at DESC
+        """)
         designs = cur.fetchall()
         conn.close()
         
@@ -1046,14 +1215,15 @@ def get_all_designs():
                 "tags": design[3] or "",
                 "description": design[4] or "",
                 "images": [{
-                    "data": design[5],  # image_data column
-                    "type": design[6] or "image/jpeg",  # image_type column
+                    "data": design[5],
+                    "type": design[6] or "image/jpeg",
                     "is_primary": True
-                }] if design[5] else []
+                }] if design[5] else [],
+                "preview_count": design[7]  # Add preview count
             }
             design_list.append(design_data)
         
-        print(f"📊 ADMIN: Retrieved {len(design_list)} designs with correct structure")
+        print(f"📊 ADMIN: Retrieved {len(design_list)} designs with preview counts")
         return jsonify({"success": True, "designs": design_list})
     except Exception as e:
         print(f"💥 ADMIN GET DESIGNS ERROR: {str(e)}")
@@ -1196,22 +1366,24 @@ def update_design(design_id):
     
 @app.route('/admin/save-design', methods=['POST'])
 def save_design():
-    """Save a new design into the designs database"""
+    """Save or update a design in the designs database - UPDATED FOR PREVIEW DELETION"""
     try:
         data = request.get_json()
         if not data:
             return jsonify({"success": False, "message": "No data received"}), 400
 
+        design_id = data.get("id")  # This will be None for new designs, present for edits
         name = data.get("name")
         price = data.get("price")
         description = data.get("description")
         tags = data.get("tags", "")
         images = data.get("images", [])
+        delete_all_previews = data.get("delete_all_previews", False)  # NEW: Handle preview deletion
 
         if not name or not price or not description:
             return jsonify({"success": False, "message": "Missing required fields"}), 400
 
-        # take only first image (since you allow one)
+        # Take only first image (since you allow one)
         image_data = None
         image_type = None
         if images and len(images) > 0:
@@ -1220,19 +1392,43 @@ def save_design():
 
         conn = sqlite3.connect(DESIGNS_DB)
         cur = conn.cursor()
-        cur.execute("""INSERT INTO designs (name, price, tags, description, image_data, image_type)
-                       VALUES (?, ?, ?, ?, ?, ?)""",
-                    (name, price, tags, description, image_data, image_type))
+        
+        if design_id:
+            # UPDATE existing design
+            if image_data and image_type:
+                # Update with new image
+                cur.execute("""UPDATE designs SET name=?, price=?, tags=?, description=?, image_data=?, image_type=?
+                               WHERE id=?""",
+                            (name, price, tags, description, image_data, image_type, design_id))
+            else:
+                # Update without changing image
+                cur.execute("""UPDATE designs SET name=?, price=?, tags=?, description=?
+                               WHERE id=?""",
+                            (name, price, tags, description, design_id))
+            
+            # NEW: Delete all preview images if requested
+            if delete_all_previews:
+                cur.execute("DELETE FROM design_previews WHERE design_id=?", (design_id,))
+                print(f"🗑️ Deleted all preview images for design {design_id}")
+            
+            message = "Design updated successfully"
+            print(f"✅ Design updated: {name} (ID: {design_id})")
+        else:
+            # INSERT new design
+            cur.execute("""INSERT INTO designs (name, price, tags, description, image_data, image_type)
+                           VALUES (?, ?, ?, ?, ?, ?)""",
+                        (name, price, tags, description, image_data, image_type))
+            design_id = cur.lastrowid
+            message = "Design saved successfully"
+            print(f"✅ New design saved: {name} (ID: {design_id})")
+        
         conn.commit()
         conn.close()
 
-        print(f"✅ New design saved: {name}")
-        return jsonify({"success": True, "message": "Design saved successfully"})
+        return jsonify({"success": True, "message": message, "design_id": design_id})
     except Exception as e:
         print(f"💥 SAVE DESIGN ERROR: {str(e)}")
         return jsonify({"success": False, "message": str(e)}), 500
-
-
 
 @app.route('/admin/designs/<int:design_id>', methods=['DELETE'])
 def delete_design(design_id):
