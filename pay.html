@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Payment - Fine Graphics</title>
   <style>
+    /* Your existing CSS styles remain the same */
     body { 
       font-family: Arial, sans-serif; 
       margin: 0; 
@@ -180,6 +181,13 @@
     <div id="qrcode"></div>
     <button id="paidBtn" class="btn btn-secondary" style="display:none;">✅ I Have Paid - Save My Order</button>
     <div id="successBox">✅ Payment Successful! Order Saved. Redirecting...</div>
+    
+    <!-- Debug section -->
+    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none;" id="debugSection">
+      <h3>🔧 Debug Information</h3>
+      <pre id="debugInfo"></pre>
+      <button onclick="testOrderSave()" class="btn" style="background: #ffc107; color: black;">Test Order Save</button>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
@@ -231,52 +239,63 @@
         renderOrderItems();
         setupEventListeners();
 
+        // Show debug section if needed
+        if (window.location.search.includes('debug')) {
+          document.getElementById('debugSection').style.display = 'block';
+          updateDebugInfo();
+        }
+
       } catch (error) {
         console.error("Initialization error:", error);
         showError("Error loading payment page: " + error.message);
       }
     }
 
-    // Render order items in the container
+    // Render order items in the container - UPDATED WITH CUSTOMIZATION DISPLAY
     function renderOrderItems() {
-      const orderContainer = document.getElementById("orderContainer");
-      total = 0;
+        const orderContainer = document.getElementById("orderContainer");
+        total = 0;
 
-      if (!checkout || !checkout.items || checkout.items.length === 0) {
-        orderContainer.innerHTML = "<div class='error'>No items found for payment.</div>";
-        document.getElementById("payBtn").disabled = true;
-        return;
-      }
+        if (!checkout || !checkout.items || checkout.items.length === 0) {
+            orderContainer.innerHTML = "<div class='error'>No items found for payment.</div>";
+            document.getElementById("payBtn").disabled = true;
+            return;
+        }
 
-      let orderHTML = '<h2>📦 Your Order Summary</h2>';
-      checkout.items.forEach(item => {
-        const subtotal = item.price * item.quantity;
-        total += subtotal;
+        let orderHTML = '<h2>📦 Your Order Summary</h2>';
+        checkout.items.forEach(item => {
+            const subtotal = item.price * item.quantity;
+            total += subtotal;
+            
+            // Check if item has customization
+            const hasCustomization = item.placement_position || item.custom_requirements;
+            
+            orderHTML += `
+                <div class="order-item">
+                    <img src="${item.image}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/120?text=Image+Not+Found'">
+                    <div class="details">
+                        <h2>${item.name}</h2>
+                        <p><strong>Price:</strong> ₹${item.price}</p>
+                        <p><strong>Quantity:</strong> ${item.quantity}</p>
+                        ${hasCustomization ? `
+                            <div style="background: #f0f8ff; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 3px solid #007bff;">
+                                <p style="margin: 2px 0; font-size: 14px;"><strong>Customization:</strong></p>
+                                ${item.placement_position ? `<p style="margin: 2px 0; font-size: 14px;">📍 ${item.design_side.toUpperCase()} - ${item.placement_position}</p>` : ''}
+                                ${(item.design_width > 0 && item.design_height > 0) ? `<p style="margin: 2px 0; font-size: 14px;">📏 ${item.design_width}cm × ${item.design_height}cm</p>` : ''}
+                                ${item.custom_requirements ? `<p style="margin: 2px 0; font-size: 14px;">📝 ${item.custom_requirements}</p>` : ''}
+                            </div>
+                        ` : ''}
+                        <p><strong>Subtotal:</strong> ₹${subtotal}</p>
+                    </div>
+                </div>
+            `;
+        });
+
+        orderContainer.innerHTML = orderHTML;
+        document.getElementById("grandTotal").textContent = "Total Amount: ₹" + total;
         
-        orderHTML += `
-          <div class="order-item">
-            <img src="${item.image}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/120?text=Image+Not+Found'">
-            <div class="details">
-              <h2>${item.name}</h2>
-              <p><strong>Price:</strong> ₹${item.price}</p>
-              <p><strong>Quantity:</strong> ${item.quantity}</p>
-              <p><strong>Subtotal:</strong> ₹${subtotal}</p>
-            </div>
-          </div>
-        `;
-      });
-
-      orderContainer.innerHTML = orderHTML;
-      document.getElementById("grandTotal").textContent = "Total Amount: ₹" + total;
-    }
-
-    // Setup event listeners for buttons
-    function setupEventListeners() {
-      const payBtn = document.getElementById("payBtn");
-      const paidBtn = document.getElementById("paidBtn");
-
-      payBtn.addEventListener("click", handlePayment);
-      paidBtn.addEventListener("click", handleOrderSave);
+        // Update debug info
+        updateDebugInfo();
     }
 
     // Handle payment process
@@ -322,9 +341,9 @@
       }, 1000);
     }
 
-    // Handle order saving after payment
-    // Handle order saving after payment - VERIFIED VERSION
-function handleOrderSave() {
+    // FIXED: Handle order saving after payment - CORRECTED VERSION
+    // IMPROVED: Handle order saving after payment
+async function handleOrderSave() {
     if (!checkout || !currentUser) {
         showError("No order data found. Please try again.");
         return;
@@ -337,41 +356,56 @@ function handleOrderSave() {
     paidBtn.disabled = true;
     paidBtn.textContent = "💾 Saving Order to Database...";
 
-    // Prepare order data for backend - CORRECT FORMAT for your orders database
-    const orderData = {
-        username: username,
-        items: checkout.items.map(item => ({
-            name: item.name,        // Maps to design_name in orders database
-            price: parseFloat(item.price), // Ensure it's a number
-            quantity: parseInt(item.quantity), // Ensure it's a number
-            image: item.image       // Maps to image_url in orders database
-        }))
-    };
+    try {
+        // Prepare order data for backend - INCLUDING CUSTOMIZATION FIELDS
+        const orderData = {
+            username: username,
+            items: checkout.items.map(item => ({
+                name: item.name || 'Unknown Design',
+                price: parseFloat(item.price) || 0,
+                quantity: parseInt(item.quantity) || 1,
+                image: item.image || 'https://via.placeholder.com/80',
+                // ADD CUSTOMIZATION FIELDS
+                placement_position: item.placement_position || '',
+                design_side: item.design_side || 'front',
+                design_width: parseInt(item.design_width) || 0,
+                design_height: parseInt(item.design_height) || 0,
+                custom_requirements: item.custom_requirements || ''
+            }))
+        };
 
-    console.log("Saving order to orders database:", orderData);
+        console.log("🔄 Sending order to database:", orderData);
 
-    // Send order to backend with error handling
-    fetch("/saveOrder", {
-        method: "POST",
-        headers: { 
-            "Content-Type": "application/json" 
-        },
-        body: JSON.stringify(orderData)
-    })
-    .then(response => {
-        console.log("Response status:", response.status);
-        if (!response.ok) {
-            return response.text().then(text => {
-                throw new Error(`HTTP ${response.status}: ${text}`);
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log("Backend response:", data);
+        // First, fix the orders table structure
+        console.log("🔧 Fixing orders table structure...");
+        const fixResponse = await fetch("/admin/fix-orders-table", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json" 
+            }
+        });
         
-        if (data.success) {
+        const fixResult = await fixResponse.json();
+        console.log("🔧 Fix table result:", fixResult);
+
+        // Send order to backend with error handling
+        const response = await fetch("/saveOrder", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json" 
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        console.log("📡 Response status:", response.status);
+
+        const result = await response.json();
+        console.log("📦 Backend response:", result);
+        
+        if (result.success) {
             // Order saved successfully to orders database
+            console.log("✅ Order saved successfully! Order ID:", result.order_id);
+            
             const checkoutKey = "checkout_" + username;
             localStorage.removeItem(checkoutKey); // Clear checkout data
             
@@ -380,34 +414,38 @@ function handleOrderSave() {
             localStorage.removeItem(cartKey);
             
             // Also clear cart from database
-            clearCartFromDatabase(username);
+            await clearCartFromDatabase(username);
             
             showSuccess();
         } else {
-            throw new Error(data.message || "Failed to save order to database");
+            throw new Error(result.message || "Failed to save order to database");
         }
-    })
-    .catch(error => {
-        console.error("Error saving order:", error);
+    } catch (error) {
+        console.error("❌ Error saving order:", error);
         showError("Failed to save order: " + error.message);
         
         // Re-enable button
         paidBtn.disabled = false;
         paidBtn.textContent = "🔄 Try Again - Save My Order";
-    });
-}
-
-// Clear cart from database after successful order
-async function clearCartFromDatabase(username) {
-    try {
-        await fetch(`/clearCart/${username}`, {
-            method: 'POST'
-        });
-        console.log("Cart cleared from database after order");
-    } catch (error) {
-        console.error("Error clearing cart from database:", error);
     }
 }
+
+    // Clear cart from database after successful order
+    async function clearCartFromDatabase(username) {
+        try {
+            const response = await fetch(`/clearCart/${username}`, {
+                method: 'POST'
+            });
+            const result = await response.json();
+            if (result.success) {
+                console.log("✅ Cart cleared from database after order");
+            } else {
+                console.warn("⚠ Could not clear cart from database:", result.message);
+            }
+        } catch (error) {
+            console.error("❌ Error clearing cart from database:", error);
+        }
+    }
 
     // Show success message and redirect
     function showSuccess() {
@@ -428,6 +466,102 @@ async function clearCartFromDatabase(username) {
       setTimeout(() => {
         window.location.href = "orders.html";
       }, 3000);
+    }
+
+    // Debug function to check what's in checkout data
+    function updateDebugInfo() {
+        const debugInfo = document.getElementById("debugInfo");
+        if (debugInfo) {
+            debugInfo.textContent = JSON.stringify({
+                currentUser: currentUser ? {
+                    username: currentUser.username,
+                    email: currentUser.email
+                } : null,
+                checkout: checkout ? {
+                    itemsCount: checkout.items ? checkout.items.length : 0,
+                    total: total,
+                    sampleItem: checkout.items && checkout.items[0] ? {
+                        name: checkout.items[0].name,
+                        price: checkout.items[0].price,
+                        quantity: checkout.items[0].quantity,
+                        placement_position: checkout.items[0].placement_position,
+                        custom_requirements: checkout.items[0].custom_requirements
+                    } : null
+                } : null
+            }, null, 2);
+        }
+    }
+
+    // Test order save function
+    async function testOrderSave() {
+        if (!currentUser) {
+            alert("Please login first");
+            return;
+        }
+
+        const username = currentUser.username || currentUser.email;
+        
+        const testOrderData = {
+            username: username,
+            items: [
+                {
+                    name: "Test Design - Debug",
+                    price: 50.00,
+                    quantity: 1,
+                    image: "https://via.placeholder.com/80",
+                    placement_position: "MIDDLE",
+                    design_side: "front",
+                    design_width: 10,
+                    design_height: 10,
+                    custom_requirements: "Test order from debug button"
+                }
+            ]
+        };
+
+        try {
+            const paidBtn = document.getElementById("paidBtn");
+            paidBtn.disabled = true;
+            paidBtn.textContent = "🧪 Testing Order Save...";
+
+            console.log("🧪 Testing order save:", testOrderData);
+
+            const response = await fetch("/saveOrder", {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json" 
+                },
+                body: JSON.stringify(testOrderData)
+            });
+
+            const result = await response.json();
+            console.log("🧪 Test order response:", result);
+
+            if (result.success) {
+                alert(`✅ Test order saved successfully!\nOrder ID: ${result.order_id}\nCheck orders page to verify.`);
+            } else {
+                alert(`❌ Test order failed: ${result.message}`);
+            }
+        } catch (error) {
+            console.error("❌ Test order error:", error);
+            alert("Test order failed: " + error.message);
+        } finally {
+            const paidBtn = document.getElementById("paidBtn");
+            paidBtn.disabled = false;
+            paidBtn.textContent = "✅ I Have Paid - Save My Order";
+        }
+    }
+
+    function setupEventListeners() {
+      const payBtn = document.getElementById("payBtn");
+      const paidBtn = document.getElementById("paidBtn");
+
+      if (payBtn) {
+        payBtn.addEventListener("click", handlePayment);
+      }
+
+      if (paidBtn) {
+        paidBtn.addEventListener("click", handleOrderSave);
+      }
     }
 
     // Show error message

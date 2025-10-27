@@ -56,6 +56,26 @@
             transition: color 0.3s;
         }
 
+        .customization-details {
+            margin-top: 0.8rem;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .customization-details small {
+            display: block;
+            margin-bottom: 0.3rem;
+            color: #555;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .customization-details small strong {
+            color: #333;
+        }
+
         nav a:hover {
             color: #ffd700;
         }
@@ -439,210 +459,254 @@
     </footer>
 
     <script>
-        // Global variables
-        let currentUser = null;
-        let cart = [];
+    // Global variables
+    let currentUser = null;
+    let cart = [];
 
-        // Initialize the application
-        async function initApp() {
-            await checkLoginStatus();
-            await loadCart();
-            updateAuthButtons();
+    // Initialize the application
+    async function initApp() {
+        await checkLoginStatus();
+        await loadCart();
+        updateAuthButtons();
+    }
+
+    // Check if user is logged in
+    async function checkLoginStatus() {
+        const userData = localStorage.getItem('currentUser');
+        if (userData) {
+            currentUser = JSON.parse(userData);
+            console.log('User logged in:', currentUser.username);
+        } else {
+            // Redirect to login if not logged in
+            window.location.href = 'login.html';
         }
+    }
 
-        // Check if user is logged in
-        async function checkLoginStatus() {
-            const userData = localStorage.getItem('currentUser');
-            if (userData) {
-                currentUser = JSON.parse(userData);
-                console.log('User logged in:', currentUser.username);
-            } else {
-                // Redirect to login if not logged in
-                window.location.href = 'login.html';
-            }
-        }
+    // Load cart from database - FIXED VERSION
+    async function loadCart() {
+        try {
+            const cartContainer = document.getElementById('cartItems');
+            cartContainer.innerHTML = '<div class="loading">Loading cart...</div>';
 
-        // Load cart from database
-        async function loadCart() {
-            try {
-                const cartContainer = document.getElementById('cartItems');
-                cartContainer.innerHTML = '<div class="loading">Loading cart...</div>';
-
-                // Load cart from database
-                if (currentUser) {
-                    const response = await fetch(`/getUserData/${currentUser.username}`);
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        cart = result.cart || [];
-                    } else {
-                        // Fallback to local storage
-                        const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
-                        cart = savedCart ? JSON.parse(savedCart) : [];
-                    }
-                }
-
-                if (cart.length === 0) {
-                    cartContainer.innerHTML = `
-                        <div class="empty-cart">
-                            <h3>Your cart is empty</h3>
-                            <p>Add some designs to get started!</p>
-                            <a href="index.html" class="btn-primary">Browse Designs</a>
-                        </div>
-                    `;
-                    updateCartSummary();
-                    return;
-                }
-
-                let cartHTML = '';
-                let subtotal = 0;
-
-                for (const item of cart) {
-                    const itemTotal = item.price * item.quantity;
-                    subtotal += itemTotal;
-
-                    cartHTML += `
-                        <div class="cart-item">
-                            <img src="${item.image}" alt="${item.name}" class="cart-item-image">
-                            <div class="cart-item-details">
-                                <h4 class="cart-item-name">${item.name}</h4>
-                                <p class="cart-item-price">₹${item.price}</p>
-                            </div>
-                            <div class="cart-item-controls">
-                                <button class="quantity-btn" onclick="updateQuantity('${item.name}', -1)">-</button>
-                                <span class="quantity">${item.quantity}</span>
-                                <button class="quantity-btn" onclick="updateQuantity('${item.name}', 1)">+</button>
-                            </div>
-                            <div class="cart-item-total">
-                                ₹${itemTotal.toFixed(2)}
-                            </div>
-                            <button class="remove-btn" onclick="removeFromCart('${item.name}')">🗑️</button>
-                        </div>
-                    `;
-                }
-
-                cartContainer.innerHTML = cartHTML;
-                updateCartSummary();
-                
-            } catch (error) {
-                console.error('Error loading cart:', error);
-                document.getElementById('cartItems').innerHTML = `
+            if (!currentUser) {
+                cartContainer.innerHTML = `
                     <div class="error">
-                        <h3>Error loading cart</h3>
-                        <p>${error.message}</p>
-                        <button class="btn-primary" onclick="loadCart()">Retry</button>
+                        <h3>Not Logged In</h3>
+                        <p>Please login to view your cart</p>
+                        <a href="login.html" class="btn-primary">Login</a>
                     </div>
                 `;
-            }
-        }
-
-        // Update quantity of cart item
-        async function updateQuantity(designName, change) {
-            const item = cart.find(item => item.name === designName);
-            if (item) {
-                item.quantity += change;
-                
-                if (item.quantity <= 0) {
-                    removeFromCart(designName);
-                    return;
-                }
-                
-                await saveCart();
-                await loadCart();
-            }
-        }
-
-        // Remove item from cart
-        // Remove item from cart - UPDATED to preserve wishlist
-async function removeFromCart(designName) {
-    cart = cart.filter(item => item.name !== designName);
-    await saveCart();
-    await loadCart();
-}
-
-// Save cart to database and local storage - UPDATED to preserve wishlist
-// Save cart to database and local storage - FIXED to skip wishlist sync
-async function saveCart() {
-    // Save to local storage
-    if (currentUser) {
-        localStorage.setItem(`cart_${currentUser.username}`, JSON.stringify(cart));
-    }
-    
-    // Sync to database - send null for wishlist to skip wishlist sync
-    try {
-        await fetch('/syncUserData', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: currentUser.username,
-                cart: cart,
-                wishlist: null // Send null to skip wishlist sync
-            })
-        });
-        console.log("✅ Cart saved successfully");
-    } catch (error) {
-        console.error('Error syncing cart to database:', error);
-    }
-}
-
-        // Update cart summary
-        function updateCartSummary() {
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const tax = subtotal * 0.18; // 18% tax
-            const total = subtotal + tax;
-
-            document.getElementById('subtotal').textContent = `₹${subtotal.toFixed(2)}`;
-            document.getElementById('tax').textContent = `₹${tax.toFixed(2)}`;
-            document.getElementById('total').textContent = `₹${total.toFixed(2)}`;
-
-            // Enable/disable checkout button
-            const checkoutBtn = document.getElementById('checkoutBtn');
-            checkoutBtn.disabled = cart.length === 0;
-        }
-
-        // Proceed to checkout
-        function proceedToCheckout() {
-            if (cart.length === 0) {
-                alert('Your cart is empty');
                 return;
             }
-            window.location.href = 'checkout.html';
-        }
 
-        // Update authentication buttons
-        function updateAuthButtons() {
-            const authButtons = document.getElementById('authButtons');
-            
-            if (currentUser) {
-                authButtons.innerHTML = `
-                    <div class="user-info">
-                        <img src="${currentUser.profile_pic || 'https://via.placeholder.com/40'}" 
-                             alt="Profile" class="user-avatar">
-                        <span class="user-name">${currentUser.username}</span>
-                        <div class="wishlist-badge">
-                            <a href="wishlist.html" style="color: white; text-decoration: none;">❤️ Wishlist</a>
-                        </div>
-                        <button class="btn btn-login" onclick="logout()">Logout</button>
+            console.log('🔄 Loading cart for user:', currentUser.username);
+
+            // FIRST: Try localStorage (most reliable)
+            const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
+            if (savedCart) {
+                cart = JSON.parse(savedCart);
+                console.log('✅ Cart loaded from localStorage:', cart);
+            } else {
+                console.log('❌ No cart data in localStorage');
+            }
+
+            // SECOND: Try to sync with database
+            try {
+                const response = await fetch(`/getUserData/${currentUser.username}`);
+                const result = await response.json();
+                
+                console.log('📦 Database response:', result);
+
+                if (result.success && result.cart && result.cart.length > 0) {
+                    // If database has cart data, use it (it's more recent)
+                    cart = result.cart;
+                    console.log('✅ Cart loaded from database:', cart);
+                    
+                    // Update localStorage with database data
+                    localStorage.setItem(`cart_${currentUser.username}`, JSON.stringify(cart));
+                }
+            } catch (dbError) {
+                console.log('❌ Database load failed, using localStorage data:', dbError);
+            }
+
+            // Display cart
+            if (cart.length === 0) {
+                cartContainer.innerHTML = `
+                    <div class="empty-cart">
+                        <h3>Your cart is empty</h3>
+                        <p>Add some designs to get started!</p>
+                        <a href="index.html" class="btn-primary">Browse Designs</a>
                     </div>
                 `;
-            } else {
-                authButtons.innerHTML = `
-                    <a href="login.html" class="btn btn-login">Login</a>
-                    <a href="register.html" class="btn btn-register">Register</a>
-                `;
+                updateCartSummary();
+                return;
             }
+
+            console.log('🎯 Final cart to display:', cart);
+            renderCartItems(cart);
+            
+        } catch (error) {
+            console.error('❌ Error loading cart:', error);
+            document.getElementById('cartItems').innerHTML = `
+                <div class="error">
+                    <h3>Error loading cart</h3>
+                    <p>${error.message}</p>
+                    <button class="btn-primary" onclick="loadCart()">Retry</button>
+                </div>
+            `;
+        }
+    }
+
+    // Render cart items
+    function renderCartItems(cartItems) {
+        let cartHTML = '';
+        let subtotal = 0;
+
+        for (const item of cartItems) {
+            const itemTotal = item.price * item.quantity;
+            subtotal += itemTotal;
+
+            cartHTML += `
+                <div class="cart-item">
+                    <img src="${item.image}" alt="${item.name}" class="cart-item-image" 
+                         onerror="this.src='https://via.placeholder.com/100?text=No+Image'">
+                    <div class="cart-item-details">
+                        <h4 class="cart-item-name">${item.name}</h4>
+                        <p class="cart-item-price">₹${item.price}</p>
+                        <!-- CUSTOMIZATION DETAILS -->
+                        ${item.placement_position ? `
+                        <div class="customization-details">
+                            <small><strong>Side:</strong> ${item.design_side || 'Front'}</small>
+                            <small><strong>Position:</strong> ${item.placement_position}</small>
+                            ${item.design_width > 0 ? `<small><strong>Size:</strong> ${item.design_width}cm × ${item.design_height}cm</small>` : ''}
+                            ${item.custom_requirements ? `<small><strong>Requirements:</strong> ${item.custom_requirements}</small>` : ''}
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="cart-item-controls">
+                        <button class="quantity-btn" onclick="updateQuantity('${item.name.replace(/'/g, "\\'")}', -1)">-</button>
+                        <span class="quantity">${item.quantity}</span>
+                        <button class="quantity-btn" onclick="updateQuantity('${item.name.replace(/'/g, "\\'")}', 1)">+</button>
+                    </div>
+                    <div class="cart-item-total">
+                        ₹${itemTotal.toFixed(2)}
+                    </div>
+                    <button class="remove-btn" onclick="removeFromCart('${item.name.replace(/'/g, "\\'")}')">🗑️</button>
+                </div>
+            `;
         }
 
-        // Logout function
-        function logout() {
-            localStorage.removeItem('currentUser');
-            currentUser = null;
-            cart = [];
-            window.location.href = 'index.html';
-        }
+        document.getElementById('cartItems').innerHTML = cartHTML;
+        updateCartSummary();
+    }
 
-        // Initialize the app when page loads
-        document.addEventListener('DOMContentLoaded', initApp);
-    </script>
+    // Save cart to database and localStorage
+    async function saveCart() {
+        // Save to local storage FIRST (most reliable)
+        if (currentUser) {
+            localStorage.setItem(`cart_${currentUser.username}`, JSON.stringify(cart));
+        }
+        
+        // THEN sync to database
+        try {
+            const response = await fetch('/syncUserData', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: currentUser.username,
+                    cart: cart,
+                    wishlist: null
+                })
+            });
+            
+            const result = await response.json();
+            console.log("✅ Cart saved to database:", result);
+        } catch (error) {
+            console.error('Error syncing cart to database:', error);
+        }
+    }
+
+    // Update quantity of cart item
+    async function updateQuantity(designName, change) {
+        const item = cart.find(item => item.name === designName);
+        if (item) {
+            item.quantity += change;
+            
+            if (item.quantity <= 0) {
+                removeFromCart(designName);
+                return;
+            }
+            
+            await saveCart();
+            await loadCart();
+        }
+    }
+
+    // Remove item from cart
+    async function removeFromCart(designName) {
+        cart = cart.filter(item => item.name !== designName);
+        await saveCart();
+        await loadCart();
+    }
+
+    // Update cart summary
+    function updateCartSummary() {
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const tax = subtotal * 0.18; // 18% tax
+        const total = subtotal + tax;
+
+        document.getElementById('subtotal').textContent = `₹${subtotal.toFixed(2)}`;
+        document.getElementById('tax').textContent = `₹${tax.toFixed(2)}`;
+        document.getElementById('total').textContent = `₹${total.toFixed(2)}`;
+
+        // Enable/disable checkout button
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        checkoutBtn.disabled = cart.length === 0;
+    }
+
+    // Proceed to checkout
+    function proceedToCheckout() {
+        if (cart.length === 0) {
+            alert('Your cart is empty');
+            return;
+        }
+        window.location.href = 'checkout.html';
+    }
+
+    // Update authentication buttons
+    function updateAuthButtons() {
+        const authButtons = document.getElementById('authButtons');
+        
+        if (currentUser) {
+            authButtons.innerHTML = `
+                <div class="user-info">
+                    <img src="${currentUser.profile_pic || 'https://via.placeholder.com/40'}" 
+                         alt="Profile" class="user-avatar">
+                    <span class="user-name">${currentUser.username}</span>
+                    <div class="wishlist-badge">
+                        <a href="wishlist.html" style="color: white; text-decoration: none;">❤️ Wishlist</a>
+                    </div>
+                    <button class="btn btn-login" onclick="logout()">Logout</button>
+                </div>
+            `;
+        } else {
+            authButtons.innerHTML = `
+                <a href="login.html" class="btn btn-login">Login</a>
+                <a href="register.html" class="btn btn-register">Register</a>
+            `;
+        }
+    }
+
+    // Logout function
+    function logout() {
+        localStorage.removeItem('currentUser');
+        currentUser = null;
+        cart = [];
+        window.location.href = 'index.html';
+    }
+
+    // Initialize the app when page loads
+    document.addEventListener('DOMContentLoaded', initApp);
+</script>
 </body>
 </html>

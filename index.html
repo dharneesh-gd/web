@@ -1001,6 +1001,59 @@
             max-width: 800px;
             max-height: 90vh;
         }
+
+        /* Customization Modal Styles */
+        .customization-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .customization-form-grid .form-group {
+            margin-bottom: 0;
+        }
+
+        .size-inputs {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .size-inputs .form-control {
+            flex: 1;
+        }
+
+        .size-unit {
+            color: #666;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .customization-preview {
+            text-align: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .customization-preview h4 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .customization-preview p {
+            margin: 0.2rem 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .customization-required {
+            color: #dc3545;
+            margin-left: 2px;
+        }
     </style>
 </head>
 <body>
@@ -1060,6 +1113,7 @@
         let cart = [];
         let wishlist = [];
         let designs = []; // Added for image preview
+        let currentCustomizationDesign = null; // Store design being customized
 
         // Initialize the application
         async function initApp() {
@@ -1298,7 +1352,7 @@
                     wishlistButtonText = isInWishlist ? '💔 Remove from Wishlist' : '❤️ Add to Wishlist';
                     cartButtonClass = isInCart ? 'added' : '';
                     wishlistButtonClass = isInWishlist ? 'added' : '';
-                    cartOnClick = `addToCart('${design.name}', ${design.price}, '${imageSrc}')`;
+                    cartOnClick = `openCustomizationModal('${design.name}', ${design.price}, '${imageSrc}', ${design.id})`;
                     wishlistOnClick = `addToWishlist('${design.name}', ${design.price}, '${imageSrc}')`;
                 }
 
@@ -1354,6 +1408,195 @@
             designsHTML += '</div>';
             container.innerHTML = designsHTML;
         }
+
+        // Customization Modal Functions
+        function openCustomizationModal(designName, price, image, designId) {
+            if (!currentUser) {
+                showLoginRequired();
+                return;
+            }
+            
+            if (!isProfileComplete()) {
+                showProfileRequired();
+                return;
+            }
+
+            // Store the design being customized
+            currentCustomizationDesign = {
+                name: designName,
+                price: price,
+                image: image,
+                id: designId
+            };
+
+            // Reset form
+            document.getElementById('customizationForm').reset();
+            document.getElementById('designWidth').value = '';
+            document.getElementById('designHeight').value = '';
+            document.getElementById('customRequirements').value = '';
+
+            // Update modal title
+            document.getElementById('customizationModalTitle').textContent = `Customize: ${designName}`;
+
+            // Show modal
+            const modal = document.getElementById('customizationModal');
+            modal.style.display = 'flex';
+        }
+
+        function closeCustomizationModal() {
+            const modal = document.getElementById('customizationModal');
+            modal.style.display = 'none';
+            currentCustomizationDesign = null;
+        }
+
+        function handleCustomizationSubmit(event) {
+            event.preventDefault();
+            
+            if (!currentCustomizationDesign) {
+                showNotification('No design selected for customization', 'remove');
+                return;
+            }
+
+            // Get form values
+            const designSide = document.getElementById('designSide').value;
+            const placementPosition = document.getElementById('placementPosition').value;
+            const designWidth = parseInt(document.getElementById('designWidth').value) || 0;
+            const designHeight = parseInt(document.getElementById('designHeight').value) || 0;
+            const customRequirements = document.getElementById('customRequirements').value.trim();
+
+            // Validation
+            if (!designSide) {
+                showNotification('Please select design side', 'remove');
+                return;
+            }
+
+            if (!placementPosition) {
+                showNotification('Please select placement position', 'remove');
+                return;
+            }
+
+            if (designWidth <= 0 || designHeight <= 0) {
+                showNotification('Please enter valid dimensions (greater than 0)', 'remove');
+                return;
+            }
+
+            // Add to cart with customization
+            addToCartWithCustomization(
+                currentCustomizationDesign.name,
+                currentCustomizationDesign.price,
+                currentCustomizationDesign.image,
+                designSide,
+                placementPosition,
+                designWidth,
+                designHeight,
+                customRequirements
+            );
+
+            // Close modal
+            closeCustomizationModal();
+        }
+
+        // Add to cart with customization data
+        // Fix the addToCartWithCustomization function
+// Add to cart with customization - FIXED VERSION
+function addToCartWithCustomization(designName, price, image, designSide, placementPosition, designWidth, designHeight, customRequirements) {
+    if (!currentUser) {
+        showLoginRequired();
+        return;
+    }
+    
+    if (!isProfileComplete()) {
+        showProfileRequired();
+        return;
+    }
+
+    console.log('🎯 Adding to cart:', {
+        designName, price, image, designSide, placementPosition, designWidth, designHeight, customRequirements
+    });
+
+    const existingItemIndex = cart.findIndex(item => item.name === designName);
+    
+    if (existingItemIndex !== -1) {
+        // Item already in cart - REMOVE it
+        cart.splice(existingItemIndex, 1);
+        showNotification(`🗑️ ${designName} removed from cart!`, 'remove');
+    } else {
+        // Item not in cart - ADD it with customization
+        const cartItem = {
+            name: designName,
+            price: parseFloat(price),
+            quantity: 1,
+            image: image,
+            placement_position: placementPosition,
+            design_side: designSide,
+            design_width: parseInt(designWidth),
+            design_height: parseInt(designHeight),
+            custom_requirements: customRequirements
+        };
+        
+        console.log('🛒 Cart item being added:', cartItem);
+        cart.push(cartItem);
+        showNotification(`✅ ${designName} added to cart with customization!`, 'success');
+    }
+
+    // Save and sync
+    saveCartToStorage();
+    updateCartBadges();
+    renderDesigns(designs);
+    
+    // Force sync to database
+    syncCartToDatabase().then(() => {
+        console.log('🔄 Cart sync completed');
+        // Verify cart was saved
+        verifyCartSaved();
+    });
+}
+
+// Verify cart was saved to database
+async function verifyCartSaved() {
+    if (!currentUser) return;
+    
+    try {
+        const response = await fetch(`/getUserData/${currentUser.username}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('✅ Cart verification - Database cart:', result.cart);
+            console.log('✅ Cart verification - Local cart:', cart);
+        }
+    } catch (error) {
+        console.error('❌ Cart verification failed:', error);
+    }
+}
+
+// Fix the syncCartToDatabase function
+async function syncCartToDatabase() {
+    if (!currentUser) {
+        console.log('❌ No user logged in, cannot sync cart');
+        return;
+    }
+
+    try {
+        console.log('🔄 Syncing cart to database:', cart);
+        
+        const response = await fetch('/syncUserData', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: currentUser.username,
+                cart: cart,
+                wishlist: null // Skip wishlist sync
+            })
+        });
+        
+        const result = await response.json();
+        console.log("✅ Cart sync response:", result);
+        return result;
+    } catch (error) {
+        console.error('❌ Error syncing cart to database:', error);
+        throw error;
+    }
+}
 
         // Cart functionality - UPDATED with profile completion check
         function addToCart(designName, price, image) {
@@ -1709,16 +1952,22 @@
 
         // Close modal when clicking outside
         document.addEventListener('click', function(event) {
-            const modal = document.getElementById('profileModal');
-            if (event.target === modal) {
-                closeProfileModal();
-            }
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    if (modal.id === 'profileModal') closeProfileModal();
+                    if (modal.id === 'customizationModal') closeCustomizationModal();
+                    if (modal.id === 'imagePreviewModal') closeImagePreview();
+                }
+            });
         });
 
         // Close modal with Escape key
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 closeProfileModal();
+                closeCustomizationModal();
+                closeImagePreview();
             }
         });
 
@@ -2079,6 +2328,70 @@ function switchPreviewImage(imageSrc, element) {
         </div>
     </div>
 
+    <!-- Design Customization Modal -->
+    <div id="customizationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="customizationModalTitle">Customize Design</h3>
+                <button class="close-btn" onclick="closeCustomizationModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="customizationForm" onsubmit="handleCustomizationSubmit(event)">
+                    <div class="customization-form-grid">
+                        <div class="form-group">
+                            <label for="designSide">Design Side <span class="customization-required">*</span></label>
+                            <select id="designSide" class="form-control" required>
+                                <option value="">Select Side</option>
+                                <option value="Front">Front</option>
+                                <option value="Back">Back</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="placementPosition">Placement Position <span class="customization-required">*</span></label>
+                            <select id="placementPosition" class="form-control" required>
+                                <option value="">Select Position</option>
+                                <option value="LEFT TOP">LEFT TOP</option>
+                                <option value="LEFT BOTTOM">LEFT BOTTOM</option>
+                                <option value="MIDDLE">MIDDLE</option>
+                                <option value="RIGHT TOP">RIGHT TOP</option>
+                                <option value="RIGHT BOTTOM">RIGHT BOTTOM</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="designSize">Design Size (in cm) <span class="customization-required">*</span></label>
+                        <div class="size-inputs">
+                            <input type="number" id="designWidth" class="form-control" placeholder="Width" min="1" max="100" required>
+                            <span class="size-unit">×</span>
+                            <input type="number" id="designHeight" class="form-control" placeholder="Height" min="1" max="100" required>
+                            <span class="size-unit">cm</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="customRequirements">Custom Requirements (Optional)</label>
+                        <textarea id="customRequirements" class="form-control" rows="3" placeholder="Any specific requirements or notes for the design..."></textarea>
+                    </div>
+                    
+                    <div class="customization-preview">
+                        <h4>Customization Summary</h4>
+                        <p id="previewSide">Side: Not selected</p>
+                        <p id="previewPosition">Position: Not selected</p>
+                        <p id="previewSize">Size: Not specified</p>
+                        <p id="previewRequirements">Requirements: None</p>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeCustomizationModal()">Cancel</button>
+                        <button type="submit" class="btn-save">✅ Add to Cart</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Image Preview Modal -->
     <!-- Image Preview Modal -->
 <div id="imagePreviewModal" class="modal">
@@ -2113,5 +2426,29 @@ function switchPreviewImage(imageSrc, element) {
         </div>
     </div>
 </div>
+
+<script>
+    // Update customization preview in real-time
+    document.addEventListener('DOMContentLoaded', function() {
+        const designSide = document.getElementById('designSide');
+        const placementPosition = document.getElementById('placementPosition');
+        const designWidth = document.getElementById('designWidth');
+        const designHeight = document.getElementById('designHeight');
+        const customRequirements = document.getElementById('customRequirements');
+        
+        function updateCustomizationPreview() {
+            document.getElementById('previewSide').textContent = `Side: ${designSide.value || 'Not selected'}`;
+            document.getElementById('previewPosition').textContent = `Position: ${placementPosition.value || 'Not selected'}`;
+            document.getElementById('previewSize').textContent = `Size: ${designWidth.value && designHeight.value ? `${designWidth.value}cm × ${designHeight.value}cm` : 'Not specified'}`;
+            document.getElementById('previewRequirements').textContent = `Requirements: ${customRequirements.value || 'None'}`;
+        }
+        
+        designSide.addEventListener('change', updateCustomizationPreview);
+        placementPosition.addEventListener('change', updateCustomizationPreview);
+        designWidth.addEventListener('input', updateCustomizationPreview);
+        designHeight.addEventListener('input', updateCustomizationPreview);
+        customRequirements.addEventListener('input', updateCustomizationPreview);
+    });
+</script>
 </body>
 </html>

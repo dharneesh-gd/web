@@ -915,7 +915,32 @@
       background: #f8f9fa;
       font-weight: bold;
     }
+.customization-info {
+    font-size: 0.8rem;
+    line-height: 1.3;
+    background: #f8f9fa !important;
+    border-left: 3px solid #667eea !important;
+    padding: 8px;
+    border-radius: 6px;
+    margin-top: 8px;
+}
 
+.customization-info div {
+    margin-bottom: 2px;
+}
+
+.custom-notes {
+    background: #e9ecef;
+    padding: 4px 6px;
+    border-radius: 3px;
+    border-left: 3px solid #667eea;
+    font-style: italic;
+}
+
+.no-customization {
+    color: #6c757d;
+    font-style: italic;
+}
     /* Login Required */
     .login-required {
       text-align: center;
@@ -2297,7 +2322,7 @@ async function editDesign(designId) {
           const designs = result.designs || [];
           window.allDesigns = designs; // Store for search functionality
 
-          if (designs.length === 0) {
+        if (designs.length === 0) {
             container.innerHTML = `
               <div style="text-align: center; padding: 40px; color: #666;">
                 <h3>🎨 No Designs Found</h3>
@@ -2537,10 +2562,11 @@ function renderDesignsGrid(designs) {
       }
     }
 
-    // Load recent orders for dashboard display
+    // Load recent orders for dashboard display - ENHANCED WITH CUSTOMIZATION
     async function loadRecentOrders() {
       try {
         const content = document.getElementById('recentOrders');
+        content.innerHTML = '<div class="loading">🔄 Loading recent orders...</div>';
         
         const response = await fetch('/admin/orders');
         const result = await response.json();
@@ -2568,6 +2594,11 @@ function renderDesignsGrid(designs) {
             const total = (order.price || 0) * (order.quantity || 1);
             const orderDate = order.order_date ? new Date(order.order_date).toLocaleDateString() : 'N/A';
             
+            // Check for customization
+            const hasCustomization = order.placement_position || 
+                                   order.design_side !== 'front' || 
+                                   order.design_width > 0;
+            
             ordersHTML += `
               <tr>
                 <td><strong>#${order.id}</strong></td>
@@ -2577,7 +2608,16 @@ function renderDesignsGrid(designs) {
                     <img src="${order.image_url || 'https://via.placeholder.com/40'}" 
                          alt="${order.design_name}" 
                          style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
-                    <span>${order.design_name || 'Unknown Design'}</span>
+                    <div>
+                      <div style="font-weight: bold;">${order.design_name || 'Unknown Design'}</div>
+                      ${hasCustomization ? `
+                        <div style="font-size: 10px; color: #666; margin-top: 2px;">
+                          📍 ${order.placement_position || ''} 
+                          ${order.design_side ? `• ${order.design_side.toUpperCase()}` : ''}
+                          ${order.design_width > 0 ? `• ${order.design_width}cm` : ''}
+                        </div>
+                      ` : ''}
+                    </div>
                   </div>
                 </td>
                 <td><strong>₹${total.toFixed(2)}</strong></td>
@@ -2622,7 +2662,7 @@ function renderDesignsGrid(designs) {
       }
     }
 
-    // Orders Management
+    // Orders Management - ENHANCED WITH CUSTOMIZATION DETAILS
     async function loadOrdersData() {
       try {
         console.log("📦 Loading orders data...");
@@ -2662,7 +2702,7 @@ function renderDesignsGrid(designs) {
             return;
           }
 
-          // Build orders table with improved UI
+          // Build orders table with improved UI - ENHANCED WITH CUSTOMIZATION DETAILS
           let ordersHTML = `
             <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
               <div>
@@ -2682,12 +2722,13 @@ function renderDesignsGrid(designs) {
             
             ordersHTML += `
               <div class="order-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #007bff;">
-                <div style="display: flex; justify-content: between; align-items: flex-start; gap: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
                   <!-- Order Image -->
                   <div style="flex-shrink: 0;">
                     <img src="${order.image_url || 'https://via.placeholder.com/80'}" 
                          alt="${order.design_name}" 
-                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e9ecef;">
+                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e9ecef; cursor: pointer;"
+                         onclick="viewFullImage('${order.image_url || 'https://via.placeholder.com/80'}', '${order.design_name.replace(/'/g, "\\'")}')">
                   </div>
                   
                   <!-- Order Details -->
@@ -2700,6 +2741,41 @@ function renderDesignsGrid(designs) {
                         <p style="margin: 0; color: #6c757d; font-size: 14px;">
                           👤 <strong>${order.username || 'Unknown Customer'}</strong>
                         </p>
+                        
+                        <!-- CUSTOMIZATION DETAILS - ALWAYS SHOW -->
+                        <div class="customization-info">
+                          <div style="font-size: 12px; font-weight: bold; color: #495057; margin-bottom: 4px;">
+                            🎨 Customization Details
+                          </div>
+                          
+                          <!-- Placement Position & Side -->
+                          <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 4px;">
+                            <div style="font-size: 11px; color: #666;">
+                              <strong>Position:</strong> ${order.placement_position || 'Not specified'}
+                            </div>
+                            <div style="font-size: 11px; color: #666;">
+                              <strong>Side:</strong> ${order.design_side ? order.design_side.toUpperCase() : 'FRONT'}
+                            </div>
+                          </div>
+                          
+                          <!-- Size -->
+                          ${(order.design_width > 0 && order.design_height > 0) ? `
+                            <div style="font-size: 11px; color: #666; margin-bottom: 4px;">
+                              <strong>Size:</strong> ${order.design_width}cm × ${order.design_height}cm
+                            </div>
+                          ` : ''}
+                          
+                          <!-- Custom Requirements -->
+                          ${order.custom_requirements ? `
+                            <div style="font-size: 11px; color: #666;">
+                              <strong>Requirements:</strong> ${order.custom_requirements}
+                            </div>
+                          ` : `
+                            <div style="font-size: 11px; color: #999; font-style: italic;">
+                              No special requirements
+                            </div>
+                          `}
+                        </div>
                       </div>
                       <div style="text-align: right;">
                         <div style="font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 5px;">
@@ -2707,6 +2783,9 @@ function renderDesignsGrid(designs) {
                         </div>
                         <div style="font-size: 12px; color: #6c757d;">
                           ${orderDate}
+                        </div>
+                        <div style="font-size: 11px; color: #999; margin-top: 5px;">
+                          Qty: ${order.quantity || 1}
                         </div>
                       </div>
                     </div>
@@ -3012,127 +3091,275 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// View Customer Details
+// View Customer Details - UPDATED WITH PASSWORD
 async function viewCustomerDetails(username) {
   try {
     console.log("🔍 Fetching customer details for:", username);
 
-        let userData = null;
-        
-        // Try stored customers first
-        if (window.allCustomers && window.allCustomers.length > 0) {
-          userData = window.allCustomers.find(user => user.username === username);
-        }
-        
-        // If not found, try API call
-        if (!userData) {
-          const usersResponse = await fetch('/admin/users');
-          const usersResult = await usersResponse.json();
-          
-          if (usersResult.success && usersResult.users) {
-            userData = usersResult.users.find(user => user.username === username);
-          }
-        }
-
-        if (!userData) {
-          throw new Error(`Customer "${username}" not found in the system.`);
-        }
-
-        console.log("✅ User data found:", userData);
-
-        // Create detailed HTML for customer information
-        const customerHTML = `
-          <div class="customer-details">
-            <div class="detail-item">
-              <label>Customer ID</label>
-              <div>#${userData.id || 'N/A'}</div>
-            </div>
-            <div class="detail-item">
-              <label>Full Name</label>
-              <div><strong>${userData.fname || ''} ${userData.lname || ''}</strong></div>
-            </div>
-            <div class="detail-item">
-              <label>Email Address</label>
-              <div>${userData.email || 'N/A'}</div>
-            </div>
-            <div class="detail-item">
-              <label>Username</label>
-              <div>${userData.username || 'N/A'}</div>
-            </div>
-            <div class="detail-item">
-              <label>Mobile Number</label>
-              <div>${userData.mobile || 'N/A'}</div>
-            </div>
-            <div class="detail-item" style="grid-column: 1 / -1;">
-              <label>Address</label>
-              <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #e9ecef; min-height: 20px;">
-                ${userData.address || 'Not provided by customer'}
-              </div>
-            </div>
-            <div class="detail-item">
-              <label>District</label>
-              <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
-                ${userData.district || 'Not provided'}
-              </div>
-            </div>
-            <div class="detail-item">
-              <label>Profile Picture</label>
-              <div>
-                ${userData.profile_pic ? 
-                  `<img src="${userData.profile_pic}" alt="Profile" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 2px solid #007bff;">` : 
-                  'No profile picture'
-                }
-              </div>
-            </div>
-            <div class="detail-item">
-              <label>Account Created</label>
-              <div>${userData.created_at ? new Date(userData.created_at).toLocaleDateString() : 'N/A'}</div>
-            </div>
-          </div>
-
-          <div style="text-align: center; margin-top: 20px;">
-            <button class="nav-btn customer-btn" onclick="viewCustomerOrders('${username}')">
-              📦 View Customer Orders
-            </button>
-            <button class="nav-btn" onclick="closeModal('customerModal')" style="background: #6c757d; margin-left: 10px;">
-              Close
-            </button>
-          </div>
-        `;
-
-        // Update modal content
-        document.getElementById('customerDetailsContent').innerHTML = customerHTML;
-        
-        // Show the modal
-        openModal('customerModal');
-        
-      } catch (error) {
-        console.error('❌ Error loading customer details:', error);
-        
-        document.getElementById('customerDetailsContent').innerHTML = `
-          <div class="error" style="text-align: center; padding: 40px;">
-            <h3>❌ Unable to Load Customer Details</h3>
-            <p>${error.message}</p>
-            <div style="margin-top: 15px;">
-              <button class="nav-btn" onclick="closeModal('customerModal')">
-                Close
-              </button>
-              <button class="nav-btn" onclick="loadCustomersData(); closeModal('customerModal');" style="background: #17a2b8;">
-                🔄 Refresh Data
-              </button>
-            </div>
-          </div>
-        `;
-        
-        openModal('customerModal');
+    let userData = null;
+    
+    // Try stored customers first
+    if (window.allCustomers && window.allCustomers.length > 0) {
+      userData = window.allCustomers.find(user => user.username === username);
+    }
+    
+    // If not found, try API call
+    if (!userData) {
+      const usersResponse = await fetch('/admin/users');
+      const usersResult = await usersResponse.json();
+      
+      if (usersResult.success && usersResult.users) {
+        userData = usersResult.users.find(user => user.username === username);
       }
     }
 
-    // View Customer Orders - REDIRECT TO NEW PAGE
-    function viewCustomerOrders(username) {
-      // Redirect to customer orders page with username parameter
-      window.location.href = `customer-orders.html?username=${encodeURIComponent(username)}`;
+    if (!userData) {
+      throw new Error(`Customer "${username}" not found in the system.`);
     }
+
+    console.log("✅ User data found:", userData);
+
+    // Create detailed HTML for customer information WITH PASSWORD
+    const customerHTML = `
+      <div class="customer-details">
+        <div class="detail-item">
+          <label>Customer ID</label>
+          <div>#${userData.id || 'N/A'}</div>
+        </div>
+        <div class="detail-item">
+          <label>Full Name</label>
+          <div><strong>${userData.fname || ''} ${userData.lname || ''}</strong></div>
+        </div>
+        <div class="detail-item">
+          <label>Email Address</label>
+          <div>${userData.email || 'N/A'}</div>
+        </div>
+        <div class="detail-item">
+          <label>Username</label>
+          <div>${userData.username || 'N/A'}</div>
+        </div>
+        <div class="detail-item">
+          <label>Password</label>
+          <div style="font-family: monospace; background: #f8f9fa; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+            ${userData.password || 'N/A'}
+          </div>
+        </div>
+        <div class="detail-item">
+          <label>Mobile Number</label>
+          <div>${userData.mobile || 'N/A'}</div>
+        </div>
+        <div class="detail-item" style="grid-column: 1 / -1;">
+          <label>Address</label>
+          <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #e9ecef; min-height: 20px;">
+            ${userData.address || 'Not provided by customer'}
+          </div>
+        </div>
+        <div class="detail-item">
+          <label>District</label>
+          <div style="padding: 12px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
+            ${userData.district || 'Not provided'}
+          </div>
+        </div>
+        <div class="detail-item">
+          <label>Profile Picture</label>
+          <div>
+            ${userData.profile_pic ? 
+              `<img src="${userData.profile_pic}" alt="Profile" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 2px solid #007bff;">` : 
+              'No profile picture'
+            }
+          </div>
+        </div>
+        <div class="detail-item">
+          <label>Account Created</label>
+          <div>${userData.created_at ? new Date(userData.created_at).toLocaleDateString() : 'N/A'}</div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 20px;">
+        <button class="nav-btn customer-btn" onclick="viewCustomerOrders('${username}')">
+          📦 View Customer Orders
+        </button>
+        <button class="nav-btn" onclick="closeModal('customerModal')" style="background: #6c757d; margin-left: 10px;">
+          Close
+        </button>
+      </div>
+    `;
+
+    // Update modal content
+    document.getElementById('customerDetailsContent').innerHTML = customerHTML;
+    
+    // Show the modal
+    openModal('customerModal');
+    
+  } catch (error) {
+    console.error('❌ Error loading customer details:', error);
+    
+    document.getElementById('customerDetailsContent').innerHTML = `
+      <div class="error" style="text-align: center; padding: 40px;">
+        <h3>❌ Unable to Load Customer Details</h3>
+        <p>${error.message}</p>
+        <div style="margin-top: 15px;">
+          <button class="nav-btn" onclick="closeModal('customerModal')">
+            Close
+          </button>
+          <button class="nav-btn" onclick="loadCustomersData(); closeModal('customerModal');" style="background: #17a2b8;">
+            🔄 Refresh Data
+          </button>
+        </div>
+      </div>
+    `;
+    
+    openModal('customerModal');
+  }
+}
+
+    // View Customer Orders - REDIRECT TO NEW PAGE
+    // Enhanced Customer Orders View with Customization
+async function viewCustomerOrders(username) {
+    try {
+        console.log("📦 Loading customer orders for:", username);
+        
+        const response = await fetch(`/getOrders/${username}`);
+        const result = await response.json();
+
+        if (result.success) {
+            const orders = result.orders || [];
+            
+            let ordersHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h4>📦 Orders for ${username}</h4>
+                    <p style="color: #666; margin-bottom: 15px;">Total orders: ${orders.length}</p>
+                </div>
+            `;
+
+            if (orders.length === 0) {
+                ordersHTML += `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">📭</div>
+                        <h3>No Orders Found</h3>
+                        <p>This customer hasn't placed any orders yet.</p>
+                    </div>
+                `;
+            } else {
+                orders.forEach(order => {
+                    ordersHTML += `
+                        <div class="order-card" style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #007bff;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                                <div>
+                                    <h4 style="margin: 0 0 5px 0; color: #343a40;">Order #${order.order_id || order.id}</h4>
+                                    <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                                        📅 ${order.date || 'Date not available'} 
+                                        | Status: <span class="status-badge status-${order.status?.toLowerCase() || 'pending'}">${order.status || 'Pending'}</span>
+                                    </p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 18px; font-weight: bold; color: #28a745;">
+                                        ₹${order.total?.toFixed(2) || '0.00'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="order-items">
+                    `;
+
+                    // Display each item in the order
+                    order.items.forEach(item => {
+                        ordersHTML += `
+                            <div class="order-item" style="display: flex; align-items: flex-start; padding: 15px; border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 10px; background: #f8f9fa;">
+                                <img src="${item.image || 'https://via.placeholder.com/80'}" 
+                                     alt="${item.name}" 
+                                     style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; margin-right: 15px; cursor: pointer;"
+                                     onclick="viewFullImage('${item.image || 'https://via.placeholder.com/80'}', '${item.name.replace(/'/g, "\\'")}')">
+                                <div style="flex: 1;">
+                                    <h5 style="margin: 0 0 8px 0; color: #343a40; font-size: 16px;">${item.name}</h5>
+                                    <div style="display: grid; grid-template-columns: auto auto; gap: 10px; margin-bottom: 10px;">
+                                        <div style="font-size: 14px; color: #666;">
+                                            <strong>Price:</strong> ₹${item.price}
+                                        </div>
+                                        <div style="font-size: 14px; color: #666;">
+                                            <strong>Quantity:</strong> ${item.quantity}
+                                        </div>
+                                        <div style="font-size: 14px; color: #666;">
+                                            <strong>Subtotal:</strong> ₹${(item.price * item.quantity).toFixed(2)}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- CUSTOMIZATION DETAILS -->
+                                    <div class="customization-info" style="margin-top: 10px;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #495057; margin-bottom: 6px;">
+                                            🎨 Customization Details
+                                        </div>
+                                        
+                                        <!-- Placement Position & Side -->
+                                        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 4px;">
+                                            <div style="font-size: 11px; color: #666;">
+                                                <strong>Position:</strong> ${item.placement_position || 'Not specified'}
+                                            </div>
+                                            <div style="font-size: 11px; color: #666;">
+                                                <strong>Side:</strong> ${item.design_side ? item.design_side.toUpperCase() : 'FRONT'}
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Size -->
+                                        ${(item.design_width > 0 && item.design_height > 0) ? `
+                                            <div style="font-size: 11px; color: #666; margin-bottom: 4px;">
+                                                <strong>Size:</strong> ${item.design_width}cm × ${item.design_height}cm
+                                            </div>
+                                        ` : ''}
+                                        
+                                        <!-- Custom Requirements -->
+                                        ${item.custom_requirements ? `
+                                            <div style="font-size: 11px; color: #666;">
+                                                <strong>Requirements:</strong> ${item.custom_requirements}
+                                            </div>
+                                        ` : `
+                                            <div style="font-size: 11px; color: #999; font-style: italic;">
+                                                No special requirements
+                                            </div>
+                                        `}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    ordersHTML += `
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Update modal content and show
+            document.getElementById('customerOrdersContent').innerHTML = ordersHTML;
+            openModal('customerOrdersModal');
+            
+        } else {
+            document.getElementById('customerOrdersContent').innerHTML = `
+                <div class="error" style="text-align: center; padding: 40px;">
+                    <h3>❌ Error Loading Orders</h3>
+                    <p>${result.message || 'Failed to load customer orders'}</p>
+                    <button class="nav-btn" onclick="closeModal('customerOrdersModal')" style="margin-top: 15px;">
+                        Close
+                    </button>
+                </div>
+            `;
+            openModal('customerOrdersModal');
+        }
+    } catch (error) {
+        console.error('❌ Error loading customer orders:', error);
+        document.getElementById('customerOrdersContent').innerHTML = `
+            <div class="error" style="text-align: center; padding: 40px;">
+                <h3>🚨 Network Error</h3>
+                <p>${error.message}</p>
+                <button class="nav-btn" onclick="closeModal('customerOrdersModal')" style="margin-top: 15px;">
+                    Close
+                </button>
+            </div>
+        `;
+        openModal('customerOrdersModal');
+    }
+}
 // In your loadAnalyticsData() function, replace the current content with this:
 
 // Enhanced Analytics Loading

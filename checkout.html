@@ -408,31 +408,54 @@
         }
 
         // Load cart from database
-        async function loadCart() {
-            try {
-                // Load cart from database
-                if (currentUser) {
-                    const response = await fetch(`/getUserData/${currentUser.username}`);
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        cart = result.cart || [];
-                    } else {
-                        // Fallback to local storage
-                        const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
-                        cart = savedCart ? JSON.parse(savedCart) : [];
-                    }
-                }
-
-                if (cart.length === 0) {
-                    throw new Error('Your cart is empty');
-                }
-                
-            } catch (error) {
-                console.error('Error loading cart:', error);
-                showEmptyCart(error.message);
-            }
+        // Load cart from database - IMPROVED VERSION
+async function loadCart() {
+    try {
+        if (!currentUser) {
+            throw new Error('User not logged in');
         }
+
+        console.log('🔄 Loading cart for checkout:', currentUser.username);
+
+        // FIRST: Try localStorage (most reliable)
+        const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
+        if (savedCart) {
+            cart = JSON.parse(savedCart);
+            console.log('✅ Cart loaded from localStorage:', cart);
+        } else {
+            console.log('❌ No cart data in localStorage');
+        }
+
+        // SECOND: Try to sync with database
+        try {
+            const response = await fetch(`/getUserData/${currentUser.username}`);
+            const result = await response.json();
+            
+            console.log('📦 Database response:', result);
+
+            if (result.success && result.cart && result.cart.length > 0) {
+                // If database has cart data, use it (it's more recent)
+                cart = result.cart;
+                console.log('✅ Cart loaded from database:', cart);
+                
+                // Update localStorage with database data
+                localStorage.setItem(`cart_${currentUser.username}`, JSON.stringify(cart));
+            }
+        } catch (dbError) {
+            console.log('❌ Database load failed, using localStorage data:', dbError);
+        }
+
+        if (cart.length === 0) {
+            throw new Error('Your cart is empty');
+        }
+        
+        console.log('🎯 Final cart for checkout:', cart);
+        
+    } catch (error) {
+        console.error('Error loading cart:', error);
+        showEmptyCart(error.message);
+    }
+}
 
         // Render checkout form
         function renderCheckout() {
@@ -505,10 +528,16 @@
                                 <div class="item-info">
                                     <img src="${item.image}" alt="${item.name}" class="item-image">
                                     <div class="item-details">
-                                        <h4>${item.name}</h4>
-                                        <div class="item-price">₹${item.price}</div>
-                                        <div class="item-quantity">Qty: ${item.quantity}</div>
-                                    </div>
+    <h4>${item.name}</h4>
+    <div class="item-price">₹${item.price}</div>
+    <div class="item-quantity">Qty: ${item.quantity}</div>
+    <!-- ADD CUSTOMIZATION DETAILS -->
+    ${item.placement_position ? `<div class="customization-details">
+        <small>📍 ${item.design_side.toUpperCase()} - ${item.placement_position}</small>
+        ${item.design_width > 0 ? `<small>📏 ${item.design_width}cm × ${item.design_height}cm</small>` : ''}
+        ${item.custom_requirements ? `<small>📝 ${item.custom_requirements}</small>` : ''}
+    </div>` : ''}
+</div>
                                 </div>
                                 <div class="item-total">
                                     ₹${(item.price * item.quantity).toFixed(2)}
@@ -547,18 +576,29 @@
         }
 
         // Show empty cart message
-        function showEmptyCart(message) {
-            document.getElementById('checkoutContainer').innerHTML = `
-                <div class="empty-cart">
-                    <h3>${message}</h3>
-                    <p>Add some designs to your cart before checkout.</p>
-                    <a href="index.html" class="btn-primary">Browse Designs</a>
-                </div>
-            `;
-        }
+        // Show empty cart message - IMPROVED
+function showEmptyCart(message) {
+    document.getElementById('checkoutContainer').innerHTML = `
+        <div class="empty-cart">
+            <h3>${message}</h3>
+            <p>Please add items to your cart before proceeding to checkout.</p>
+            <div style="margin-top: 1rem;">
+                <a href="index.html" class="btn-primary">Browse Designs</a>
+                <a href="cart.html" class="btn-primary" style="background: #6c757d; margin-left: 1rem;">View Cart</a>
+            </div>
+            <div style="margin-top: 1rem;">
+                <button onclick="debugCartData()" style="background: #ffc107; color: #000; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">
+                    Debug Cart Data
+                </button>
+            </div>
+        </div>
+    `;
+}
 
         // Place order
         // Place order - UPDATED: Redirect to payment instead of saving directly
+// Place order - UPDATED: Include customization data
+// Place order - Redirect to payment page
 async function placeOrder() {
     try {
         const form = document.getElementById('checkoutForm');
@@ -596,7 +636,12 @@ async function placeOrder() {
                 name: item.name,
                 price: item.price,
                 quantity: item.quantity,
-                image: item.image
+                image: item.image,
+                placement_position: item.placement_position || '',
+                design_side: item.design_side || 'front',
+                design_width: item.design_width || 0,
+                design_height: item.design_height || 0,
+                custom_requirements: item.custom_requirements || ''
             })),
             shipping: formData,
             subtotal: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
@@ -607,7 +652,7 @@ async function placeOrder() {
         // Save to localStorage for payment page
         localStorage.setItem(`checkout_${currentUser.username}`, JSON.stringify(checkoutData));
 
-        // Redirect to payment page instead of saving order directly
+        // Redirect to payment page
         window.location.href = 'pay.html';
 
     } catch (error) {
@@ -615,6 +660,29 @@ async function placeOrder() {
         alert('Error processing checkout: ' + error.message);
     }
 }
+// Debug function to check cart data
+function debugCartData() {
+    console.log('=== CART DEBUG INFO ===');
+    console.log('Current User:', currentUser);
+    console.log('Cart from variable:', cart);
+    
+    // Check localStorage
+    const localCart = localStorage.getItem(`cart_${currentUser.username}`);
+    console.log('Cart from localStorage:', localCart ? JSON.parse(localCart) : 'No localStorage data');
+    
+    // Check database
+    fetch(`/getUserData/${currentUser.username}`)
+        .then(response => response.json())
+        .then(result => {
+            console.log('Cart from database:', result.cart);
+        })
+        .catch(error => {
+            console.log('Database fetch error:', error);
+        });
+}
+
+// Call this in initApp for debugging:
+// debugCartData();
 
 // Save cart to database and local storage
 async function saveCart() {

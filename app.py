@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 import sqlite3
 import os
 import time
+import random
 from flask_cors import CORS
 from datetime import datetime, timedelta
 
@@ -42,7 +43,7 @@ def init_users_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )""")
             
-            # Cart table
+            # Cart table - UPDATED WITH CUSTOMIZATION FIELDS
             cur.execute("""CREATE TABLE IF NOT EXISTS user_cart (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT,
@@ -50,6 +51,11 @@ def init_users_db():
                 price REAL,
                 quantity INTEGER,
                 image_url TEXT,
+                placement_position TEXT DEFAULT '',
+                design_side TEXT DEFAULT 'front',
+                design_width INTEGER DEFAULT 0,
+                design_height INTEGER DEFAULT 0,
+                custom_requirements TEXT DEFAULT '',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (username) REFERENCES users (username)
             )""")
@@ -88,7 +94,7 @@ def init_orders_db():
             conn = sqlite3.connect(ORDERS_DB)
             cur = conn.cursor()
             
-            # Orders table
+            # Orders table - UPDATED WITH CUSTOMIZATION FIELDS
             cur.execute("""CREATE TABLE IF NOT EXISTS orders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT,
@@ -96,6 +102,11 @@ def init_orders_db():
                 price REAL,
                 quantity INTEGER,
                 image_url TEXT,
+                placement_position TEXT DEFAULT '',
+                design_side TEXT DEFAULT 'front',
+                design_width INTEGER DEFAULT 0,
+                design_height INTEGER DEFAULT 0,
+                custom_requirements TEXT DEFAULT '',
                 order_date TEXT,
                 status TEXT DEFAULT 'Pending',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -164,7 +175,6 @@ def init_admin_db():
                 print(f"💥 Failed to initialize admin database after {max_retries} attempts: {e}")
                 return False
 
-# In app.py - Update the init_designs_db function
 def init_designs_db():
     """Initialize designs database with preview images support - REMOVED DEFAULT PREVIEWS"""
     try:
@@ -591,7 +601,7 @@ def get_existing_wishlist(username):
         return []
     
 def sync_cart_to_db(username, cart_items):
-    """Sync cart data to database"""
+    """Sync cart data to database WITH CUSTOMIZATION FIELDS"""
     try:
         conn = sqlite3.connect(USERS_DB)
         cur = conn.cursor()
@@ -599,14 +609,20 @@ def sync_cart_to_db(username, cart_items):
         # Clear existing cart for this user
         cur.execute("DELETE FROM user_cart WHERE username=?", (username,))
         
-        # Save new cart items
+        # Save new cart items WITH CUSTOMIZATION FIELDS
         saved_count = 0
         for item in cart_items:
             try:
-                cur.execute("""INSERT INTO user_cart (username, design_name, price, quantity, image_url) 
-                              VALUES (?, ?, ?, ?, ?)""",
+                cur.execute("""INSERT INTO user_cart (username, design_name, price, quantity, image_url, 
+                              placement_position, design_side, design_width, design_height, custom_requirements) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                             (username, item.get('name'), float(item.get('price', 0)), 
-                             int(item.get('quantity', 1)), item.get('image', '')))
+                             int(item.get('quantity', 1)), item.get('image', ''),
+                             item.get('placement_position', ''), 
+                             item.get('design_side', 'front'),
+                             int(item.get('design_width', 0)),
+                             int(item.get('design_height', 0)),
+                             item.get('custom_requirements', '')))
                 saved_count += 1
             except Exception as e:
                 print(f"⚠ Failed to save cart item {item}: {e}")
@@ -655,9 +671,9 @@ def sync_wishlist_to_db(username, wishlist_items):
 
 @app.route('/getUserData/<username>')
 def get_user_data(username):
-    """Get both cart and wishlist data for a user"""
+    """Get both cart and wishlist data for a user WITH CUSTOMIZATION FIELDS"""
     try:
-        # Get cart data
+        # Get cart data WITH CUSTOMIZATION FIELDS
         cart_conn = sqlite3.connect(USERS_DB)
         cart_cur = cart_conn.cursor()
         cart_cur.execute("SELECT * FROM user_cart WHERE username=?", (username,))
@@ -670,7 +686,12 @@ def get_user_data(username):
                 "name": item[2],
                 "price": float(item[3]),
                 "quantity": item[4],
-                "image": item[5]
+                "image": item[5],
+                "placement_position": item[6] if len(item) > 6 else '',
+                "design_side": item[7] if len(item) > 7 else 'front',
+                "design_width": item[8] if len(item) > 8 else 0,
+                "design_height": item[9] if len(item) > 9 else 0,
+                "custom_requirements": item[10] if len(item) > 10 else ''
             })
         
         # Get wishlist data
@@ -720,14 +741,20 @@ def save_cart():
         # Clear existing cart for this user
         cur.execute("DELETE FROM user_cart WHERE username=?", (username,))
         
-        # Save new cart items
+        # Save new cart items WITH CUSTOMIZATION FIELDS
         saved_count = 0
         for item in cart_items:
             try:
-                cur.execute("""INSERT INTO user_cart (username, design_name, price, quantity, image_url) 
-                              VALUES (?, ?, ?, ?, ?)""",
+                cur.execute("""INSERT INTO user_cart (username, design_name, price, quantity, image_url,
+                              placement_position, design_side, design_width, design_height, custom_requirements) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                             (username, item.get('name'), float(item.get('price', 0)), 
-                             int(item.get('quantity', 1)), item.get('image', '')))
+                             int(item.get('quantity', 1)), item.get('image', ''),
+                             item.get('placement_position', ''), 
+                             item.get('design_side', 'front'),
+                             int(item.get('design_width', 0)),
+                             int(item.get('design_height', 0)),
+                             item.get('custom_requirements', '')))
                 saved_count += 1
             except Exception as e:
                 print(f"⚠ Failed to save cart item {item}: {e}")
@@ -759,7 +786,12 @@ def get_cart(username):
                 "name": item[2],
                 "price": float(item[3]),
                 "quantity": item[4],
-                "image": item[5]
+                "image": item[5],
+                "placement_position": item[6] if len(item) > 6 else '',
+                "design_side": item[7] if len(item) > 7 else 'front',
+                "design_width": item[8] if len(item) > 8 else 0,
+                "design_height": item[9] if len(item) > 9 else 0,
+                "custom_requirements": item[10] if len(item) > 10 else ''
             })
         
         print(f"📦 CART RETRIEVED: {username} - {len(cart_list)} items")
@@ -852,15 +884,46 @@ def get_wishlist(username):
     except Exception as e:
         print(f"💥 GET WISHLIST ERROR: {str(e)}")
         return jsonify({"success": False, "message": str(e)}), 500
-
+@app.route('/admin/fix-orders-structure', methods=['POST'])
+def fix_orders_structure():
+    """Fix orders table structure by adding order_id to existing orders"""
+    try:
+        conn = sqlite3.connect(ORDERS_DB)
+        cur = conn.cursor()
+        
+        # Check if order_id column exists
+        cur.execute("PRAGMA table_info(orders)")
+        columns = [col[1] for col in cur.fetchall()]
+        
+        if 'order_id' not in columns:
+            # Add order_id column
+            cur.execute("ALTER TABLE orders ADD COLUMN order_id TEXT")
+            
+            # Generate order_id for existing orders based on date
+            cur.execute("SELECT id, order_date FROM orders")
+            existing_orders = cur.fetchall()
+            
+            for order_id, order_date in existing_orders:
+                new_order_id = f"ORD{order_id}{int(time.time())}"
+                cur.execute("UPDATE orders SET order_id=? WHERE id=?", (new_order_id, order_id))
+            
+            conn.commit()
+            print("✅ Added order_id column to existing orders")
+        
+        conn.close()
+        return jsonify({"success": True, "message": "Orders structure fixed successfully"})
+        
+    except Exception as e:
+        print(f"💥 FIX ORDERS ERROR: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
 # ==================== ORDER ROUTES (orders.db) ====================
 
 @app.route('/saveOrder', methods=['POST'])
 def save_order():
-    """Save order to separate orders database"""
+    """Save order to separate orders database - IMPROVED VERSION"""
     try:
         data = request.get_json()
-        print(f"📦 ORDER SAVE REQUEST: {data}")
+        print(f"📦 ORDER SAVE REQUEST RECEIVED")
         
         if not data:
             return jsonify({"success": False, "message": "No data received"}), 400
@@ -868,43 +931,160 @@ def save_order():
         username = data.get("username")
         items = data.get("items", [])
         
+        print(f"👤 Username: {username}")
+        print(f"📦 Items count: {len(items)}")
+        
         if not username:
             return jsonify({"success": False, "message": "Username is required"}), 400
             
         if not items:
             return jsonify({"success": False, "message": "No items in order"}), 400
 
+        # Generate a unique order ID for grouping
+        import random
+        import time
+        order_id = f"ORD{int(time.time())}{random.randint(1000, 9999)}"
         order_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
         conn = sqlite3.connect(ORDERS_DB)
         cur = conn.cursor()
         
+        # Ensure orders table exists with all required fields
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS orders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_id TEXT,
+                username TEXT,
+                design_name TEXT,
+                price REAL,
+                quantity INTEGER,
+                image_url TEXT,
+                placement_position TEXT DEFAULT '',
+                design_side TEXT DEFAULT 'front',
+                design_width INTEGER DEFAULT 0,
+                design_height INTEGER DEFAULT 0,
+                custom_requirements TEXT DEFAULT '',
+                order_date TEXT,
+                status TEXT DEFAULT 'Pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
         saved_count = 0
-        for item in items:
+        errors = []
+        
+        for index, item in enumerate(items):
             try:
+                print(f"💾 Saving item {index + 1}: {item.get('name')}")
+                
+                # Extract all fields with defaults
+                design_name = item.get('name', 'Unknown Design')
+                price = float(item.get('price', 0))
+                quantity = int(item.get('quantity', 1))
+                image_url = item.get('image', '')
+                placement_position = item.get('placement_position', '')
+                design_side = item.get('design_side', 'front')
+                design_width = int(item.get('design_width', 0))
+                design_height = int(item.get('design_height', 0))
+                custom_requirements = item.get('custom_requirements', '')
+                
                 cur.execute("""INSERT INTO orders 
-                               (username, design_name, price, quantity, image_url, order_date, status)
-                               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                            (username, 
-                             item.get('name'), 
-                             float(item.get('price', 0)), 
-                             int(item.get('quantity', 1)), 
-                             item.get('image', ''), 
+                               (order_id, username, design_name, price, quantity, image_url, 
+                                placement_position, design_side, design_width, design_height, custom_requirements,
+                                order_date, status)
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                            (order_id,
+                             username, 
+                             design_name, 
+                             price, 
+                             quantity, 
+                             image_url,
+                             placement_position,
+                             design_side,
+                             design_width,
+                             design_height,
+                             custom_requirements,
                              order_date, 
                              'Pending'))
                 saved_count += 1
+                print(f"✅ Successfully saved: {design_name}")
+                
             except Exception as e:
-                print(f"⚠ Failed to save order item {item}: {e}")
+                error_msg = f"Item {index + 1} ({item.get('name', 'Unknown')}): {str(e)}"
+                errors.append(error_msg)
+                print(f"❌ Failed to save item: {error_msg}")
                 continue
         
         conn.commit()
         conn.close()
 
-        print(f"✅ ORDER SAVED SUCCESSFULLY: {saved_count} items for {username}")
-        return jsonify({"success": True, "message": f"Order saved with {saved_count} items"})
+        if saved_count > 0:
+            print(f"✅ ORDER SAVED SUCCESSFULLY: {saved_count} items in order {order_id} for {username}")
+            return jsonify({
+                "success": True, 
+                "message": f"Order saved with {saved_count} items", 
+                "order_id": order_id,
+                "saved_count": saved_count,
+                "errors": errors if errors else None
+            })
+        else:
+            print(f"❌ ORDER SAVE FAILED: No items saved for {username}")
+            return jsonify({
+                "success": False, 
+                "message": f"Failed to save any items. Errors: {errors}"
+            }), 500
         
     except Exception as e:
         print(f"💥 ORDER SAVE ERROR: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "message": f"Error saving order: {str(e)}"}), 500
+
+@app.route('/admin/fix-orders-table', methods=['POST'])
+def fix_orders_table():
+    """Fix orders table structure - ADD THIS TO APP.PY"""
+    try:
+        conn = sqlite3.connect(ORDERS_DB)
+        cur = conn.cursor()
+        
+        # Check current table structure
+        cur.execute("PRAGMA table_info(orders)")
+        columns = [col[1] for col in cur.fetchall()]
+        print(f"📋 Current orders columns: {columns}")
+        
+        # Add missing columns if they don't exist
+        if 'order_id' not in columns:
+            cur.execute("ALTER TABLE orders ADD COLUMN order_id TEXT")
+            print("✅ Added order_id column")
+        
+        if 'placement_position' not in columns:
+            cur.execute("ALTER TABLE orders ADD COLUMN placement_position TEXT DEFAULT ''")
+            print("✅ Added placement_position column")
+            
+        if 'design_side' not in columns:
+            cur.execute("ALTER TABLE orders ADD COLUMN design_side TEXT DEFAULT 'front'")
+            print("✅ Added design_side column")
+            
+        if 'design_width' not in columns:
+            cur.execute("ALTER TABLE orders ADD COLUMN design_width INTEGER DEFAULT 0")
+            print("✅ Added design_width column")
+            
+        if 'design_height' not in columns:
+            cur.execute("ALTER TABLE orders ADD COLUMN design_height INTEGER DEFAULT 0")
+            print("✅ Added design_height column")
+            
+        if 'custom_requirements' not in columns:
+            cur.execute("ALTER TABLE orders ADD COLUMN custom_requirements TEXT DEFAULT ''")
+            print("✅ Added custom_requirements column")
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({"success": True, "message": "Orders table structure fixed successfully"})
+        
+    except Exception as e:
+        print(f"💥 FIX ORDERS TABLE ERROR: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/admin/designs/<int:design_id>/previews-enhanced', methods=['GET'])
 def get_design_previews_enhanced(design_id):
@@ -951,37 +1131,127 @@ def get_design_previews_enhanced(design_id):
     
 @app.route('/getOrders/<username>')
 def get_orders(username):
-    """Get user orders from orders database"""
+    """Get user orders from orders database - HANDLES MISSING COLUMNS"""
     try:
+        print(f"📦 GET ORDERS REQUEST FOR: {username}")
+        
         conn = sqlite3.connect(ORDERS_DB)
         cur = conn.cursor()
         
-        cur.execute("SELECT * FROM orders WHERE username=? ORDER BY order_date DESC", (username,))
-        orders = cur.fetchall()
+        # First check if table exists
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='orders'")
+        table_exists = cur.fetchone()
+        
+        if not table_exists:
+            conn.close()
+            print(f"❌ ORDERS TABLE DOES NOT EXIST IN {ORDERS_DB}")
+            return jsonify({"success": True, "orders": []})
+        
+        # Check which columns exist
+        cur.execute("PRAGMA table_info(orders)")
+        columns_info = cur.fetchall()
+        existing_columns = [col[1] for col in columns_info]
+        print(f"📋 Existing columns in orders table: {existing_columns}")
+        
+        # Build query based on available columns
+        base_columns = ["id", "design_name", "price", "quantity", "image_url", "order_date", "status"]
+        
+        # Add optional columns if they exist
+        optional_columns = ["placement_position", "design_side", "design_width", "design_height", "custom_requirements", "order_id"]
+        selected_columns = base_columns.copy()
+        
+        for col in optional_columns:
+            if col in existing_columns:
+                selected_columns.append(col)
+        
+        # Build the SELECT query
+        select_query = f"SELECT {', '.join(selected_columns)} FROM orders WHERE username=? ORDER BY order_date DESC"
+        print(f"📋 Executing query: {select_query}")
+        
+        cur.execute(select_query, (username,))
+        orders_data = cur.fetchall()
+        
+        # Map column names to their positions
+        column_positions = {}
+        for i, col in enumerate(selected_columns):
+            column_positions[col] = i
+        
+        orders_with_items = []
+        
+        # Group by order_id if it exists, otherwise treat each row as separate order
+        if 'order_id' in existing_columns:
+            # Group by order_id
+            order_groups = {}
+            for row in orders_data:
+                order_id = row[column_positions['order_id']] if 'order_id' in column_positions else f"ORD{row[column_positions['id']]}"
+                
+                if order_id not in order_groups:
+                    order_groups[order_id] = {
+                        'order_id': order_id,
+                        'date': row[column_positions['order_date']] if 'order_date' in column_positions else '',
+                        'status': row[column_positions['status']] if 'status' in column_positions else 'Pending',
+                        'items': [],
+                        'total': 0
+                    }
+                
+                # Add item to order group
+                item_total = (row[column_positions['price']] or 0) * (row[column_positions['quantity']] or 1)
+                order_groups[order_id]['total'] += item_total
+                
+                item_data = {
+                    'name': row[column_positions['design_name']] or 'Unknown Design',
+                    'price': float(row[column_positions['price']] or 0),
+                    'quantity': row[column_positions['quantity']] or 1,
+                    'image': row[column_positions['image_url']] or 'https://via.placeholder.com/80?text=No+Image'
+                }
+                
+                # Add optional fields if they exist
+                if 'placement_position' in column_positions:
+                    item_data['placement_position'] = row[column_positions['placement_position']] or ''
+                if 'design_side' in column_positions:
+                    item_data['design_side'] = row[column_positions['design_side']] or 'front'
+                if 'design_width' in column_positions:
+                    item_data['design_width'] = row[column_positions['design_width']] or 0
+                if 'design_height' in column_positions:
+                    item_data['design_height'] = row[column_positions['design_height']] or 0
+                if 'custom_requirements' in column_positions:
+                    item_data['custom_requirements'] = row[column_positions['custom_requirements']] or ''
+                
+                order_groups[order_id]['items'].append(item_data)
+            
+            orders_with_items = list(order_groups.values())
+        else:
+            # No order_id - treat each row as separate order
+            for row in orders_data:
+                order_data = {
+                    'order_id': row[column_positions['id']],
+                    'date': row[column_positions['order_date']] if 'order_date' in column_positions else '',
+                    'status': row[column_positions['status']] if 'status' in column_positions else 'Pending',
+                    'total': float((row[column_positions['price']] or 0) * (row[column_positions['quantity']] or 1)),
+                    'items': [{
+                        'name': row[column_positions['design_name']] or 'Unknown Design',
+                        'price': float(row[column_positions['price']] or 0),
+                        'quantity': row[column_positions['quantity']] or 1,
+                        'image': row[column_positions['image_url']] or 'https://via.placeholder.com/80?text=No+Image',
+                        'placement_position': row[column_positions['placement_position']] if 'placement_position' in column_positions else '',
+                        'design_side': row[column_positions['design_side']] if 'design_side' in column_positions else 'front',
+                        'design_width': row[column_positions['design_width']] if 'design_width' in column_positions else 0,
+                        'design_height': row[column_positions['design_height']] if 'design_height' in column_positions else 0,
+                        'custom_requirements': row[column_positions['custom_requirements']] if 'custom_requirements' in column_positions else ''
+                    }]
+                }
+                orders_with_items.append(order_data)
+        
         conn.close()
         
-        order_list = []
-        for order in orders:
-            order_list.append({
-                "id": order[0],
-                "username": order[1],
-                "name": order[2],
-                "price": order[3],
-                "quantity": order[4],
-                "image": order[5],
-                "date": order[6],
-                "status": order[7]
-            })
-        
-        print(f"📋 ORDERS RETRIEVED FOR: {username} - Count: {len(order_list)}")
-        return jsonify({"success": True, "orders": order_list})
+        print(f"✅ ORDERS RETRIEVED FOR: {username} - {len(orders_with_items)} orders")
+        return jsonify({"success": True, "orders": orders_with_items})
         
     except Exception as e:
         print(f"💥 GET ORDERS ERROR: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "message": f"Error retrieving orders: {str(e)}"}), 500
-
-# ==================== DESIGN MANAGEMENT ROUTES (FIXED) ====================
-
 @app.route('/getDesigns')
 def get_designs():
     """Get all designs for main website"""
@@ -1023,6 +1293,7 @@ def force_init_designs():
             return jsonify({"success": False, "message": "Failed to initialize designs database"}), 500
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
 @app.route('/test-designs-create')
 def test_designs_create():
     """Test if designs table can be created"""
@@ -1254,6 +1525,130 @@ def debug_designs_structure():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/debug/check-orders/<username>')
+def debug_check_orders(username):
+    """Check if orders exist for a user"""
+    try:
+        conn = sqlite3.connect(ORDERS_DB)
+        cur = conn.cursor()
+        
+        # Check table structure
+        cur.execute("PRAGMA table_info(orders)")
+        columns = cur.fetchall()
+        
+        # Get orders for user
+        cur.execute("SELECT * FROM orders WHERE username=?", (username,))
+        orders = cur.fetchall()
+        
+        conn.close()
+        
+        return jsonify({
+            "username": username,
+            "table_columns": [col[1] for col in columns],
+            "orders_count": len(orders),
+            "orders": orders
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/debug/orders-db-health')
+def debug_orders_db_health():
+    """Check orders database health"""
+    try:
+        print("🔍 Checking orders database health...")
+        
+        # Check if database file exists
+        db_exists = os.path.exists(ORDERS_DB)
+        
+        if not db_exists:
+            return jsonify({
+                "success": False,
+                "message": f"Orders database file {ORDERS_DB} does not exist",
+                "file_exists": False
+            })
+        
+        conn = sqlite3.connect(ORDERS_DB)
+        cur = conn.cursor()
+        
+        # Check if tables exist
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = cur.fetchall()
+        table_names = [table[0] for table in tables]
+        
+        # Check orders table structure
+        orders_table_exists = 'orders' in table_names
+        orders_count = 0
+        sample_order = None
+        
+        if orders_table_exists:
+            cur.execute("SELECT COUNT(*) FROM orders")
+            orders_count = cur.fetchone()[0]
+            
+            if orders_count > 0:
+                cur.execute("SELECT * FROM orders LIMIT 1")
+                sample_order = cur.fetchone()
+        
+        conn.close()
+        
+        return jsonify({
+            "success": True,
+            "database_file": ORDERS_DB,
+            "file_exists": db_exists,
+            "tables": table_names,
+            "orders_table_exists": orders_table_exists,
+            "total_orders": orders_count,
+            "sample_order": sample_order
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "message": "Failed to check orders database health"
+        }), 500
+@app.route('/debug/fix-orders-db')
+def debug_fix_orders_db():
+    """Try to fix orders database if it's broken"""
+    try:
+        print("🔧 Attempting to fix orders database...")
+        
+        # Reinitialize orders database
+        success = init_orders_db()
+        
+        if success:
+            return jsonify({"success": True, "message": "Orders database reinitialized successfully"})
+        else:
+            return jsonify({"success": False, "message": "Failed to reinitialize orders database"}), 500
+            
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/debug/create-test-order/<username>')
+def debug_create_test_order(username):
+    """Create a test order for debugging"""
+    try:
+        conn = sqlite3.connect(ORDERS_DB)
+        cur = conn.cursor()
+        
+        # Create test order
+        cur.execute("""
+            INSERT INTO orders (username, design_name, price, quantity, image_url, order_date, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (username, "Test Design", 100.00, 1, "https://via.placeholder.com/80", 
+              datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "Pending"))
+        
+        order_id = cur.lastrowid
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            "success": True, 
+            "message": f"Test order created for {username}",
+            "order_id": order_id
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/admin/designs', methods=['POST'])
 def add_design():
@@ -1429,8 +1824,6 @@ def save_design():
     except Exception as e:
         print(f"💥 SAVE DESIGN ERROR: {str(e)}")
         return jsonify({"success": False, "message": str(e)}), 500
-
-# ==================== ANALYTICS ROUTES ====================
 
 # ==================== ANALYTICS ROUTES ====================
 
@@ -1643,6 +2036,7 @@ def export_analytics():
     except Exception as e:
         print(f"💥 EXPORT ANALYTICS ERROR: {str(e)}")
         return jsonify({"success": False, "message": str(e)}), 500
+
 @app.route('/admin/designs/<int:design_id>', methods=['DELETE'])
 def delete_design(design_id):
     """Delete design - FIXED VERSION"""
@@ -1741,7 +2135,7 @@ def admin_login():
     
 @app.route('/admin/users')
 def get_all_users():
-    """Get all users from users database"""
+    """Get all users from users database WITH PASSWORDS"""
     try:
         conn = sqlite3.connect(USERS_DB)
         cur = conn.cursor()
@@ -1757,6 +2151,7 @@ def get_all_users():
                 "lname": user[2],
                 "email": user[3],
                 "username": user[4],
+                "password": user[5],  # ADD PASSWORD FIELD
                 "address": user[6] or "",
                 "mobile": user[7] or "",
                 "district": user[8] or "",
@@ -1769,37 +2164,62 @@ def get_all_users():
     except Exception as e:
         print(f"💥 ADMIN GET USERS ERROR: {str(e)}")
         return jsonify({"success": False, "message": str(e)}), 500
-
+    
 @app.route('/admin/orders')
 def get_all_orders():
-    """Get all orders from orders database"""
+    """Get all orders from orders database WITH CUSTOMIZATION FIELDS - FIXED VERSION"""
     try:
+        print("📦 ADMIN: Fetching all orders...")
+        
         conn = sqlite3.connect(ORDERS_DB)
         cur = conn.cursor()
-        cur.execute("SELECT * FROM orders ORDER BY order_date DESC")
+        
+        # First check if table exists and has data
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='orders'")
+        if not cur.fetchone():
+            conn.close()
+            return jsonify({"success": True, "orders": [], "message": "Orders table does not exist"})
+        
+        # Get all orders with proper error handling
+        cur.execute("""
+            SELECT id, username, design_name, price, quantity, image_url, 
+                   placement_position, design_side, design_width, design_height, 
+                   custom_requirements, order_date, status, created_at
+            FROM orders 
+            ORDER BY order_date DESC
+        """)
         orders = cur.fetchall()
         conn.close()
         
         order_list = []
         for order in orders:
-            order_list.append({
+            order_data = {
                 "id": order[0],
                 "username": order[1],
                 "design_name": order[2],
-                "price": float(order[3]),
-                "quantity": order[4],
-                "image_url": order[5],
-                "order_date": order[6],
-                "status": order[7] or "Pending",
-                "created_at": order[8] if len(order) > 8 else ""
-            })
+                "price": float(order[3]) if order[3] else 0,
+                "quantity": order[4] or 1,
+                "image_url": order[5] or "https://via.placeholder.com/80",
+                "placement_position": order[6] if len(order) > 6 and order[6] else '',
+                "design_side": order[7] if len(order) > 7 and order[7] else 'front',
+                "design_width": order[8] if len(order) > 8 and order[8] else 0,
+                "design_height": order[9] if len(order) > 9 and order[9] else 0,
+                "custom_requirements": order[10] if len(order) > 10 and order[10] else '',
+                "order_date": order[11] or datetime.now().strftime("%Y-%m-%d"),
+                "status": order[12] or "Pending",
+                "created_at": order[13] if len(order) > 13 else ""
+            }
+            order_list.append(order_data)
         
         print(f"📊 ADMIN: Retrieved {len(order_list)} orders from orders.db")
         return jsonify({"success": True, "orders": order_list})
+        
     except Exception as e:
         print(f"💥 ADMIN GET ORDERS ERROR: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
-
+    
 @app.route('/admin/orders/<int:order_id>', methods=['PUT'])
 def update_order_status(order_id):
     """Update order status in orders database"""
@@ -1933,7 +2353,12 @@ def debug_cart(username):
             "design_name": item[2],
             "price": item[3],
             "quantity": item[4],
-            "image_url": item[5]
+            "image_url": item[5],
+            "placement_position": item[6] if len(item) > 6 else '',
+            "design_side": item[7] if len(item) > 7 else 'front',
+            "design_width": item[8] if len(item) > 8 else 0,
+            "design_height": item[9] if len(item) > 9 else 0,
+            "custom_requirements": item[10] if len(item) > 10 else ''
         })
     
     return jsonify({
@@ -1941,7 +2366,89 @@ def debug_cart(username):
         "cart": cart_list,
         "total_items": len(cart_items)
     })
+@app.route('/debug/cart-data/<username>')
+def debug_cart_data(username):
+    """Debug cart data for a user"""
+    try:
+        conn = sqlite3.connect(USERS_DB)
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM user_cart WHERE username=?", (username,))
+        cart_items = cur.fetchall()
+        conn.close()
+        
+        return jsonify({
+            "username": username,
+            "cart_items": cart_items,
+            "count": len(cart_items)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+@app.route('/debug/cart-full/<username>')
+def debug_cart_full(username):
+    """Debug cart data with full details"""
+    try:
+        conn = sqlite3.connect(USERS_DB)
+        cur = conn.cursor()
+        
+        # Check if user_cart table exists
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='user_cart'")
+        table_exists = cur.fetchone()
+        
+        if not table_exists:
+            return jsonify({"error": "user_cart table does not exist"})
+        
+        # Get cart items
+        cur.execute("SELECT * FROM user_cart WHERE username=?", (username,))
+        cart_items = cur.fetchall()
+        
+        # Get column names
+        cur.execute("PRAGMA table_info(user_cart)")
+        columns = [col[1] for col in cur.fetchall()]
+        
+        conn.close()
+        
+        cart_data = []
+        for item in cart_items:
+            item_dict = {}
+            for i, col in enumerate(columns):
+                item_dict[col] = item[i]
+            cart_data.append(item_dict)
+        
+        return jsonify({
+            "username": username,
+            "table_exists": True,
+            "columns": columns,
+            "cart_items": cart_data,
+            "count": len(cart_items)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+@app.route('/debug/test-cart-add', methods=['POST'])
+def debug_test_cart_add():
+    """Test adding item to cart directly"""
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        design_name = data.get('design_name')
+        
+        conn = sqlite3.connect(USERS_DB)
+        cur = conn.cursor()
+        
+        # Add test item
+        cur.execute("""
+            INSERT INTO user_cart (username, design_name, price, quantity, image_url, 
+                                  placement_position, design_side, design_width, design_height, custom_requirements) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (username, design_name, 100.00, 1, 'test_image.jpg', 'MIDDLE', 'front', 10, 10, 'Test requirements'))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({"success": True, "message": "Test item added to cart"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 @app.route('/debug/wishlist/<username>')
 def debug_wishlist(username):
     conn = sqlite3.connect(USERS_DB)
@@ -1964,6 +2471,108 @@ def debug_wishlist(username):
         "database": "users.db",
         "wishlist": wishlist_list,
         "total_items": len(wishlist_items)
+    })
+@app.route('/debug/orders-for-user/<username>')
+def debug_orders_for_user(username):
+    """Debug endpoint to see raw orders data for a user"""
+    try:
+        conn = sqlite3.connect(ORDERS_DB)
+        cur = conn.cursor()
+        
+        # Check table structure
+        cur.execute("PRAGMA table_info(orders)")
+        columns = cur.fetchall()
+        
+        # Get all orders for user
+        cur.execute("SELECT * FROM orders WHERE username=?", (username,))
+        orders = cur.fetchall()
+        
+        conn.close()
+        
+        return jsonify({
+            "username": username,
+            "table_columns": [col[1] for col in columns],
+            "raw_orders": orders,
+            "orders_count": len(orders)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/admin/fix-orders-columns', methods=['POST'])
+def fix_orders_columns():
+    """Add missing columns to orders table"""
+    try:
+        conn = sqlite3.connect(ORDERS_DB)
+        cur = conn.cursor()
+        
+        # Get current table structure
+        cur.execute("PRAGMA table_info(orders)")
+        current_columns = [col[1] for col in cur.fetchall()]
+        print(f"📋 Current orders columns: {current_columns}")
+        
+        # Columns we need to add
+        required_columns = [
+            ('placement_position', 'TEXT DEFAULT ""'),
+            ('design_side', 'TEXT DEFAULT "front"'),
+            ('design_width', 'INTEGER DEFAULT 0'),
+            ('design_height', 'INTEGER DEFAULT 0'),
+            ('custom_requirements', 'TEXT DEFAULT ""'),
+            ('order_id', 'TEXT')
+        ]
+        
+        added_columns = []
+        for column_name, column_type in required_columns:
+            if column_name not in current_columns:
+                try:
+                    cur.execute(f"ALTER TABLE orders ADD COLUMN {column_name} {column_type}")
+                    added_columns.append(column_name)
+                    print(f"✅ Added column: {column_name}")
+                except Exception as e:
+                    print(f"⚠ Failed to add column {column_name}: {e}")
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            "success": True, 
+            "message": f"Added {len(added_columns)} columns to orders table",
+            "added_columns": added_columns
+        })
+        
+    except Exception as e:
+        print(f"💥 FIX ORDERS COLUMNS ERROR: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    
+@app.route('/debug/orders')
+def debug_orders():
+    conn = sqlite3.connect(ORDERS_DB)
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM orders")
+    orders = cur.fetchall()
+    conn.close()
+    
+    order_list = []
+    for order in orders:
+        order_list.append({
+            "id": order[0],
+            "username": order[1],
+            "design_name": order[2],
+            "price": order[3],
+            "quantity": order[4],
+            "image_url": order[5],
+            "placement_position": order[6] if len(order) > 6 else '',
+            "design_side": order[7] if len(order) > 7 else 'front',
+            "design_width": order[8] if len(order) > 8 else 0,
+            "design_height": order[9] if len(order) > 9 else 0,
+            "custom_requirements": order[10] if len(order) > 10 else '',
+            "order_date": order[11],
+            "status": order[12]
+        })
+    
+    return jsonify({
+        "database": "orders.db",
+        "orders": order_list,
+        "total_orders": len(orders)
     })
 
 @app.route('/test-designs-db')
@@ -2037,33 +2646,45 @@ def debug_admin_users():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
-@app.route('/debug/orders')
-def debug_orders():
-    conn = sqlite3.connect(ORDERS_DB)
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM orders")
-    orders = cur.fetchall()
-    conn.close()
-    
-    order_list = []
-    for order in orders:
-        order_list.append({
-            "id": order[0],
-            "username": order[1],
-            "design_name": order[2],
-            "price": order[3],
-            "quantity": order[4],
-            "image_url": order[5],
-            "order_date": order[6],
-            "status": order[7]
+
+@app.route('/admin/debug-orders-db')
+def admin_debug_orders_db():
+    """Debug orders database for admin"""
+    try:
+        conn = sqlite3.connect(ORDERS_DB)
+        cur = conn.cursor()
+        
+        # Check if table exists
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='orders'")
+        table_exists = cur.fetchone()
+        
+        if not table_exists:
+            return jsonify({"success": False, "message": "Orders table does not exist"})
+        
+        # Get table structure
+        cur.execute("PRAGMA table_info(orders)")
+        columns = cur.fetchall()
+        
+        # Get row count
+        cur.execute("SELECT COUNT(*) FROM orders")
+        row_count = cur.fetchone()[0]
+        
+        # Get sample data
+        cur.execute("SELECT * FROM orders LIMIT 5")
+        sample_data = cur.fetchall()
+        
+        conn.close()
+        
+        return jsonify({
+            "success": True,
+            "table_exists": True,
+            "columns": [{"name": col[1], "type": col[2]} for col in columns],
+            "total_orders": row_count,
+            "sample_data": sample_data
         })
-    
-    return jsonify({
-        "database": "orders.db",
-        "orders": order_list,
-        "total_orders": len(orders)
-    })
+        
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/debug-add-design')
 def debug_add_design():
