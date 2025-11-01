@@ -518,42 +518,56 @@
     }
 
     // Remove purchased items from cart
-    async function removePurchasedItemsFromCart() {
-        try {
-            if (!currentUser || !checkout || !checkout.items) {
-                console.log("❌ Cannot remove items: missing data");
-                return;
-            }
-
-            const username = currentUser.username || currentUser.email;
-            const cartKey = `cart_${username}`;
-            const savedCart = localStorage.getItem(cartKey);
-
-            if (!savedCart) {
-                console.log("❌ No cart found to remove items from");
-                return;
-            }
-
-            let cart = JSON.parse(savedCart);
-            const purchasedItemNames = checkout.items.map(item => item.name);
-            
-            console.log("🛒 Cart before removal:", cart);
-            console.log("🗑️ Items to remove:", purchasedItemNames);
-
-            // Remove purchased items from cart
-            const newCart = cart.filter(item => !purchasedItemNames.includes(item.name));
-            
-            console.log("🛒 Cart after removal:", newCart);
-
-            // Save updated cart
-            localStorage.setItem(cartKey, JSON.stringify(newCart));
-            console.log("✅ Successfully removed purchased items from cart");
-
-        } catch (error) {
-            console.error("❌ Error removing items from cart:", error);
-            throw error;
+    // Improved: Remove purchased items from cart
+async function removePurchasedItemsFromCart() {
+    try {
+        if (!currentUser || !checkout || !checkout.items) {
+            console.log("❌ Cannot remove items: missing data");
+            return;
         }
+
+        const username = currentUser.username || currentUser.email;
+        const cartKey = `cart_${username}`;
+        const savedCart = localStorage.getItem(cartKey);
+
+        if (!savedCart) {
+            console.log("❌ No cart found to remove items from");
+            return;
+        }
+
+        let cart = JSON.parse(savedCart);
+        const purchasedItemNames = checkout.items.map(item => item.name);
+        
+        console.log("🛒 Cart before removal:", cart);
+        console.log("🗑️ Items to remove:", purchasedItemNames);
+
+        // Improved removal logic - compare by name and customization details
+        const newCart = cart.filter(cartItem => {
+            return !checkout.items.some(purchasedItem => {
+                // Match by name and key customization properties
+                const nameMatches = cartItem.name === purchasedItem.name;
+                const placementMatches = cartItem.placement_position === purchasedItem.placement_position;
+                const requirementsMatch = cartItem.custom_requirements === purchasedItem.custom_requirements;
+                
+                return nameMatches && placementMatches && requirementsMatch;
+            });
+        });
+        
+        console.log("🛒 Cart after removal:", newCart);
+
+        // Save updated cart
+        localStorage.setItem(cartKey, JSON.stringify(newCart));
+        console.log("✅ Successfully removed purchased items from cart");
+        
+        // Verify removal worked
+        const verifyCart = localStorage.getItem(cartKey);
+        console.log("🔍 Verification - cart after save:", JSON.parse(verifyCart));
+
+    } catch (error) {
+        console.error("❌ Error removing items from cart:", error);
+        throw error;
     }
+}
 
     // Show error message
     function showError(message) {
