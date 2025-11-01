@@ -4,15 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fine Graphics - Premium Design Services</title>
-    <script>
-    // Force desktop view only on mobile devices
-    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-        var viewport = document.querySelector("meta[name=viewport]");
-        if (viewport) {
-            viewport.setAttribute('content', 'width=1200, initial-scale=0.5, user-scalable=yes');
-        }
-    }
+<script>
+if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  const overlay = document.createElement('div');
+  overlay.innerHTML = `
+    <div id="desktop-guide" style="
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      text-align: center;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    ">
+      <h2 style="color:#ffd700; margin-bottom:10px;">Best Viewed in Desktop Mode 💻</h2>
+      <p style="font-size:16px; margin-bottom:20px;">
+        For the best experience, please enable <b>Desktop Site</b> in your browser.
+      </p>
+      <div style="background:white; color:black; padding:10px 15px; border-radius:8px; text-align:left; max-width:280px;">
+        <ol>
+          <li>Tap the <b>⋮</b> (three dots) menu in your browser.</li>
+          <li>Check <b>Desktop site</b>.</li>
+          <li>Reload the page.</li>
+        </ol>
+      </div>
+      <button style="margin-top:25px; background:#667eea; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="document.getElementById('desktop-guide').remove()">
+        Got it
+      </button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
 </script>
+
     <style>
         /* fix the ui suitable for mobile*/
         * {
@@ -52,6 +81,111 @@
 
         .logo span {
             color: #ffd700;
+        }
+
+        /* Profile Dropdown Styles */
+        .profile-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .profile-menu-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .profile-menu-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            min-width: 200px;
+            z-index: 1000;
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        .profile-dropdown-menu.show {
+            display: block;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .profile-header {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-username {
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .profile-email {
+            color: #666;
+            margin: 0;
+            font-size: 0.8rem;
+        }
+
+        .profile-menu-items {
+            padding: 0.5rem 0;
+        }
+
+        .profile-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: #333;
+            text-decoration: none;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        .profile-menu-item:hover {
+            background: #f8f9fa;
+        }
+
+        .profile-menu-item.logout {
+            color: #dc3545;
+            border-top: 1px solid #eee;
+        }
+
+        .profile-menu-item.logout:hover {
+            background: #fff5f5;
         }
 
         /* Preview Gallery Styles */
@@ -107,131 +241,7 @@
             object-fit: cover;
             border-radius: 4px;
         }
-/* Preview Gallery Styles */
-.preview-gallery {
-    position: relative;
-    margin-bottom: 1rem;
-    text-align: center;
-}
 
-.preview-image {
-    max-width: 100%;
-    max-height: 500px;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    border-radius: 10px;
-    margin-bottom: 1rem;
-    border: 1px solid #ddd;
-    background: #f8f9fa;
-}
-
-.preview-thumbnails {
-    display: flex;
-    gap: 8px;
-    margin: 15px 0;
-    overflow-x: auto;
-    padding: 10px 0;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.preview-thumbnail {
-    width: 60px;
-    height: 60px;
-    border: 2px solid transparent;
-    border-radius: 6px;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: border-color 0.3s;
-}
-
-.preview-thumbnail.active {
-    border-color: #667eea;
-}
-
-.preview-thumbnail:hover {
-    border-color: #5a6fd8;
-}
-
-.preview-thumbnail img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 4px;
-}
-
-.preview-nav {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-    padding: 0 10px;
-}
-
-.preview-nav button {
-    background: #667eea;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background 0.3s;
-}
-
-.preview-nav button:hover {
-    background: #5a6fd8;
-}
-
-.preview-nav button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-}
-
-/* Preview Info Styles */
-.preview-info {
-    padding: 1rem;
-    text-align: center;
-    background: #f8f9fa;
-    border-radius: 10px;
-    margin-top: 1rem;
-}
-
-.preview-info h4 {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    color: #333;
-}
-
-.preview-info .price {
-    font-size: 1.3rem;
-    font-weight: bold;
-    color: #667eea;
-    margin-bottom: 0.5rem;
-}
-
-.preview-info .description {
-    color: #666;
-    line-height: 1.4;
-    margin-bottom: 0;
-}
-/* Add to existing CSS */
-.price-preview {
-    font-weight: bold;
-    color: #28a745;
-    font-size: 16px;
-    margin: 8px 0;
-    text-align: center;
-    padding: 8px;
-    background: #f8f9fa;
-    border-radius: 5px;
-    border: 1px solid #e9ecef;
-}
-/* Image Preview Modal Styles */
-.image-modal-content {
-    max-width: 800px;
-    max-height: 90vh;
-}
         .preview-nav {
             display: flex;
             justify-content: space-between;
@@ -285,6 +295,25 @@
             color: #666;
             line-height: 1.4;
             margin-bottom: 0;
+        }
+
+        /* Add to existing CSS */
+        .price-preview {
+            font-weight: bold;
+            color: #28a745;
+            font-size: 16px;
+            margin: 8px 0;
+            text-align: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+
+        /* Image Preview Modal Styles */
+        .image-modal-content {
+            max-width: 800px;
+            max-height: 90vh;
         }
 
         /* Profile Picture Styles */
@@ -710,12 +739,12 @@
 
         /* User Info */
         .user-info {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem; /* Reduced gap */
-    color: white;
-    flex-wrap: wrap;
-}
+            display: flex;
+            align-items: center;
+            gap: 0.5rem; /* Reduced gap */
+            color: white;
+            flex-wrap: wrap;
+        }
 
         .user-avatar {
             width: 40px;
@@ -1023,12 +1052,6 @@
 
         .btn-clear-search:hover {
             background: #5a6268;
-        }
-
-        /* Image Preview Modal Styles */
-        .image-modal-content {
-            max-width: 800px;
-            max-height: 90vh;
         }
 
         /* Customization Modal Styles */
@@ -1860,25 +1883,61 @@ async function syncCartToDatabase() {
             }, 2000);
         }
 
+        // Toggle profile dropdown menu
+        function toggleProfileMenu() {
+            const dropdownMenu = document.getElementById('profileDropdownMenu');
+            dropdownMenu.classList.toggle('show');
+        }
+
+        // Close profile dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdownMenu = document.getElementById('profileDropdownMenu');
+            const profileToggle = document.querySelector('.profile-menu-toggle');
+            
+            if (dropdownMenu && profileToggle && 
+                !dropdownMenu.contains(event.target) && 
+                !profileToggle.contains(event.target)) {
+                dropdownMenu.classList.remove('show');
+            }
+        });
+
         // Update authentication buttons
         function updateAuthButtons() {
             const authButtons = document.getElementById('authButtons');
             
             if (currentUser) {
                 authButtons.innerHTML = `
-    <div class="user-info">
-        <div class="cart-badge">
-            <button class="cart-profile" onclick="window.location.href='cart.html'"> 🛒 Cart</button>
-            <span class="badge" id="cartCount">0</span>
-        </div>
-        <div class="wishlist-badge">
-            <button class="cart-profile" onclick="window.location.href='wishlist.html'">❤️ Wishlist</button>
-            <span class="badge" id="wishlistCount">0</span>
-        </div>
-        <button class="btn-profile" onclick="window.location.href='profile.html'">👤 profile</button>
-        <button class="logout-btn" onclick="logout()">Logout</button>
-    </div>
-`;
+                    <div class="user-info">
+                        <div class="cart-badge">
+                            <button class="cart-profile" onclick="window.location.href='cart.html'">🛒 Cart</button>
+                            <span class="badge" id="cartCount">0</span>
+                        </div>
+                        <div class="wishlist-badge">
+                            <button class="cart-profile" onclick="window.location.href='wishlist.html'">❤️ Wishlist</button>
+                            <span class="badge" id="wishlistCount">0</span>
+                        </div>
+                        <div class="profile-dropdown">
+                            <button class="cart-profile" onclick="toggleProfileMenu()">
+                                Profile ⋮
+                            </button>
+                            <div class="profile-dropdown-menu" id="profileDropdownMenu">
+                                <div class="profile-header">
+                                    <img src="${currentUser.profile_pic || 'https://via.placeholder.com/80'}" alt="Profile" class="profile-avatar">
+                                    <h4 class="profile-username">${currentUser.username}</h4>
+                                    <p class="profile-email">${currentUser.email || 'No email'}</p>
+                                </div>
+                                <div class="profile-menu-items">
+                                    <button class="profile-menu-item" onclick="openUpdateProfileModal()">
+                                        👤 Update Profile
+                                    </button>
+                                    <button class="profile-menu-item logout" onclick="logout()">
+                                        🚪 Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             } else {
                 authButtons.innerHTML = `
                     <a href="login.html" class="btn btn-login">Login</a>
@@ -2399,9 +2458,13 @@ function switchPreviewImage(imageSrc, element) {
                             <select id="placementPosition" class="form-control" required>
                                 <option value="">Select Position</option>
                                 <option value="LEFT TOP">LEFT TOP</option>
+                                <option value="LEFT CENTER">LEFT CENTER</option>
                                 <option value="LEFT BOTTOM">LEFT BOTTOM</option>
-                                <option value="MIDDLE">MIDDLE</option>
+                                 <option value="CENTER TOP">CENTER TOP</option>
+                                <option value="CENTER">CENTER</option>
+                                <option value="CENTER BOTTOM">CENTER BOTTOM</option>
                                 <option value="RIGHT TOP">RIGHT TOP</option>
+                                <option value="RIGHT CENTER">RIGHT CENTER</option>
                                 <option value="RIGHT BOTTOM">RIGHT BOTTOM</option>
                             </select>
                         </div>
