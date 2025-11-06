@@ -233,6 +233,28 @@
             transform: none !important;
         }
 
+        /* Cart button states */
+        .btn-cart.added {
+            background: #dc3545 !important; /* Red color for remove */
+        }
+
+        .btn-cart.added:hover {
+            background: #c82333 !important; /* Darker red on hover */
+        }
+
+        /* Price preview in customization */
+        .price-preview {
+            font-weight: bold;
+            color: #28a745;
+            font-size: 16px;
+            margin: 8px 0;
+            text-align: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+
         /* Login and Profile Required Messages */
         .login-required-message, .profile-required-message {
             text-align: center;
@@ -644,6 +666,7 @@
                         <p id="previewSide">Side: Not selected</p>
                         <p id="previewPosition">Position: Not selected</p>
                         <p id="previewSize">Size: Not specified</p>
+                        <!-- Price will be dynamically inserted here -->
                         <p id="previewRequirements">Requirements: None</p>
                     </div>
                     
@@ -705,13 +728,55 @@
         let currentCustomizationDesign = null; // Store design being customized
 
         // Initialize the application
-        async function initApp() {
-            await checkLoginStatus();
-            await loadWishlist();
-            loadCartFromStorage();
-            updateAuthButtons();
-        }
+        // Initialize the application - UPDATED to properly load cart
+async function initApp() {
+    await checkLoginStatus();
+    
+    // Load cart from storage FIRST
+    loadCartFromStorage();
+    
+    // Then load wishlist
+    await loadWishlist();
+    
+    updateAuthButtons();
+    
+    // Sync with database to get latest data
+    await syncUserData();
+}
 
+// Sync user data from database - NEW FUNCTION
+async function syncUserData() {
+    if (!currentUser) return;
+
+    try {
+        console.log('🔄 Syncing user data from database...');
+        
+        const response = await fetch(`/getUserData/${currentUser.username}`);
+        const result = await response.json();
+
+        if (result.success) {
+            console.log(`🔄 Database data - Cart: ${result.cart?.length || 0}, Wishlist: ${result.wishlist?.length || 0}`);
+            
+            // Only update cart if database has items and we don't have local items
+            if (result.cart && result.cart.length > 0 && cart.length === 0) {
+                cart = result.cart;
+                console.log('✅ Cart updated from database');
+            }
+            
+            // Update wishlist from database
+            if (result.wishlist && result.wishlist.length > 0) {
+                wishlist = result.wishlist;
+                console.log('✅ Wishlist updated from database');
+            }
+
+            saveCartToStorage();
+            updateCartBadges();
+            console.log(`✅ Sync complete - Cart: ${cart.length}, Wishlist: ${wishlist.length}`);
+        }
+    } catch (error) {
+        console.error('Error syncing user data:', error);
+    }
+}
         // Check if user is logged in
         async function checkLoginStatus() {
             const userData = localStorage.getItem('currentUser');
@@ -758,7 +823,7 @@
             }, 1000);
         }
 
-        // Load wishlist from database - ENHANCED with debugging
+        // Load wishlist from database - UPDATED to match index page behavior
         async function loadWishlist() {
             try {
                 const wishlistContainer = document.getElementById('wishlistItems');
@@ -804,6 +869,9 @@
                     const isLoggedIn = !!currentUser;
                     const hasCompleteProfile = isProfileComplete();
                     const canAddToCart = isLoggedIn && hasCompleteProfile;
+                    
+                    // Check if item is already in cart
+                    const isInCart = cart.some(cartItem => cartItem.name === item.name);
 
                     let cartButtonText, cartButtonClass, cartOnClick;
 
@@ -816,9 +884,16 @@
                         cartButtonClass = 'disabled-profile';
                         cartOnClick = 'showProfileRequired()';
                     } else {
-                        cartButtonText = '🛒 Add to Cart';
-                        cartButtonClass = '';
-                        cartOnClick = `openCustomizationModal('${item.name}', ${item.price}, '${item.image}')`;
+                        // FIX: Different behavior for Add vs Remove (if already in cart)
+                        if (isInCart) {
+                            cartButtonText = '🗑️ Remove from Cart';
+                            cartButtonClass = 'added';
+                            cartOnClick = `removeFromCart('${item.name}')`;
+                        } else {
+                            cartButtonText = '🛒 Add to Cart';
+                            cartButtonClass = '';
+                            cartOnClick = `openCustomizationModal('${item.name}', ${item.price}, '${item.image}')`;
+                        }
                     }
 
                     wishlistHTML += `
@@ -830,7 +905,7 @@
                                 <div class="wishlist-item-actions">
                                     <button class="btn-cart ${cartButtonClass}" 
                                             onclick="${cartOnClick}"
-                                            title="${!isLoggedIn ? 'Please login to add to cart' : (!hasCompleteProfile ? 'Please complete your profile first' : '')}">
+                                            title="${!isLoggedIn ? 'Please login to add to cart' : (!hasCompleteProfile ? 'Please complete your profile first' : (isInCart ? 'Remove from cart' : 'Add to cart with customization'))}">
                                         ${cartButtonText}
                                     </button>
                                     <button class="btn-remove" onclick="removeFromWishlist('${item.name}')">
@@ -938,10 +1013,18 @@
                 return;
             }
 
-            // Add to cart with customization
+            // Calculate price based on dimensions: width × height × 10
+            const calculatedPrice = designWidth * designHeight * 10;
+            
+            // Show price confirmation
+            if (!confirm(`Price for ${designWidth}cm × ${designHeight}cm design: ₹${calculatedPrice}\n\nClick OK to add to cart.`)) {
+                return;
+            }
+
+            // Add to cart with customization and calculated price
             addToCartWithCustomization(
                 currentCustomizationDesign.name,
-                currentCustomizationDesign.price,
+                calculatedPrice, // Use calculated price instead of original price
                 currentCustomizationDesign.image,
                 designSide,
                 placementPosition,
@@ -954,8 +1037,95 @@
             closeCustomizationModal();
         }
 
-        // Add to cart with customization data
-        function addToCartWithCustomization(designName, price, image, designSide, placementPosition, designWidth, designHeight, customRequirements) {
+        // Add to cart with customization data - UPDATED with calculated price
+        // Add to cart with customization data - FIXED VERSION
+async function addToCartWithCustomization(designName, price, image, designSide, placementPosition, designWidth, designHeight, customRequirements) {
+    if (!currentUser) {
+        showLoginRequired();
+        return;
+    }
+    
+    if (!isProfileComplete()) {
+        showProfileRequired();
+        return;
+    }
+
+    console.log('🎯 Adding to cart from wishlist:', {
+        designName, price, image, designSide, placementPosition, designWidth, designHeight, customRequirements
+    });
+
+    const existingItemIndex = cart.findIndex(item => item.name === designName);
+    
+    if (existingItemIndex !== -1) {
+        // Item already in cart - REMOVE it
+        cart.splice(existingItemIndex, 1);
+        showNotification(`🗑️ ${designName} removed from cart!`, 'remove');
+    } else {
+        // Item not in cart - ADD it with customization
+        const cartItem = {
+            name: designName,
+            price: parseFloat(price), // This is now the calculated price
+            quantity: 1,
+            image: image,
+            placement_position: placementPosition,
+            design_side: designSide,
+            design_width: parseInt(designWidth),
+            design_height: parseInt(designHeight),
+            custom_requirements: customRequirements,
+            calculated_price: parseFloat(price) // Store for reference
+        };
+        
+        console.log('🛒 Cart item being added:', cartItem);
+        cart.push(cartItem);
+        showNotification(`✅ ${designName} added to cart! Price: ₹${price}`, 'success');
+    }
+
+    // Save and sync
+    saveCartToStorage();
+    updateCartBadges();
+    
+    // Force sync to database and wait for completion
+    try {
+        await syncCartToDatabase();
+        console.log('🔄 Cart sync completed from wishlist');
+        
+        // Verify the cart was saved
+        await verifyCartSaved();
+    } catch (error) {
+        console.error('❌ Error syncing cart:', error);
+        showNotification('❌ Failed to sync cart with server', 'remove');
+    }
+    
+    // Reload wishlist to update button states
+    loadWishlist();
+}
+
+// Verify cart was saved to database
+async function verifyCartSaved() {
+    if (!currentUser) return;
+    
+    try {
+        const response = await fetch(`/getUserData/${currentUser.username}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            const dbCartCount = result.cart?.length || 0;
+            const localCartCount = cart.length;
+            console.log(`✅ Cart verification - Database: ${dbCartCount} items, Local: ${localCartCount} items`);
+            
+            if (dbCartCount !== localCartCount) {
+                console.warn('⚠️ Cart count mismatch between local and database');
+                // If there's a mismatch, sync local to database again
+                await syncCartToDatabase();
+            }
+        }
+    } catch (error) {
+        console.error('❌ Cart verification failed:', error);
+    }
+}
+
+        // Remove item from cart function
+        function removeFromCart(designName) {
             if (!currentUser) {
                 showLoginRequired();
                 return;
@@ -966,73 +1136,75 @@
                 return;
             }
 
-            console.log('🎯 Adding to cart from wishlist:', {
-                designName, price, image, designSide, placementPosition, designWidth, designHeight, customRequirements
-            });
-
+            // Find the item in cart
             const existingItemIndex = cart.findIndex(item => item.name === designName);
             
             if (existingItemIndex !== -1) {
-                // Item already in cart - REMOVE it
-                cart.splice(existingItemIndex, 1);
-                showNotification(`🗑️ ${designName} removed from cart!`, 'remove');
+                // Ask for confirmation before removing
+                if (confirm(`Are you sure you want to remove "${designName}" from your cart?`)) {
+                    // Remove from cart
+                    cart.splice(existingItemIndex, 1);
+                    showNotification(`🗑️ ${designName} removed from cart!`, 'remove');
+                    
+                    // Save and sync
+                    saveCartToStorage();
+                    updateCartBadges();
+                    
+                    // Reload wishlist to update button states
+                    loadWishlist();
+                    
+                    // Force sync to database
+                    syncCartToDatabase().then(() => {
+                        console.log('🔄 Cart sync completed after removal from wishlist');
+                    });
+                }
             } else {
-                // Item not in cart - ADD it with customization
-                const cartItem = {
-                    name: designName,
-                    price: parseFloat(price),
-                    quantity: 1,
-                    image: image,
-                    placement_position: placementPosition,
-                    design_side: designSide,
-                    design_width: parseInt(designWidth),
-                    design_height: parseInt(designHeight),
-                    custom_requirements: customRequirements
-                };
-                
-                console.log('🛒 Cart item being added:', cartItem);
-                cart.push(cartItem);
-                showNotification(`✅ ${designName} added to cart with customization!`, 'success');
+                showNotification('Item not found in cart', 'remove');
             }
-
-            // Save and sync
-            saveCartToStorage();
-            updateCartBadges();
-            
-            // Force sync to database
-            syncCartToDatabase().then(() => {
-                console.log('🔄 Cart sync completed from wishlist');
-            });
         }
 
         // Sync cart to database
-        async function syncCartToDatabase() {
-            if (!currentUser) {
-                console.log('❌ No user logged in, cannot sync cart');
-                return;
-            }
+        // Sync cart to database - IMPROVED VERSION
+async function syncCartToDatabase() {
+    if (!currentUser) {
+        console.log('❌ No user logged in, cannot sync cart');
+        return { success: false, message: 'No user logged in' };
+    }
 
-            try {
-                console.log('🔄 Syncing cart to database from wishlist:', cart);
-                
-                const response = await fetch('/syncUserData', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username: currentUser.username,
-                        cart: cart,
-                        wishlist: null // Skip wishlist sync
-                    })
-                });
-                
-                const result = await response.json();
-                console.log("✅ Cart sync response from wishlist:", result);
-                return result;
-            } catch (error) {
-                console.error('❌ Error syncing cart to database from wishlist:', error);
-                throw error;
-            }
+    try {
+        console.log('🔄 Syncing cart to database from wishlist:', cart);
+        
+        const response = await fetch('/syncUserData', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                username: currentUser.username,
+                cart: cart,
+                wishlist: null // Skip wishlist sync
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
+        const result = await response.json();
+        console.log("✅ Cart sync response from wishlist:", result);
+        
+        if (!result.success) {
+            throw new Error(result.message || 'Failed to sync cart');
+        }
+        
+        return result;
+    } catch (error) {
+        console.error('❌ Error syncing cart to database from wishlist:', error);
+        showNotification('❌ Failed to save cart to server', 'remove');
+        throw error;
+    }
+}
 
         // Remove item from wishlist - FIXED to work correctly
         async function removeFromWishlist(designName) {
@@ -1086,12 +1258,26 @@
         }
 
         // Load cart from local storage
-        function loadCartFromStorage() {
-            if (currentUser) {
-                const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
-                cart = savedCart ? JSON.parse(savedCart) : [];
+        // Load cart from local storage - IMPROVED VERSION
+function loadCartFromStorage() {
+    if (currentUser) {
+        const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
+        if (savedCart) {
+            try {
+                cart = JSON.parse(savedCart);
+                console.log(`📦 Loaded ${cart.length} cart items from localStorage`);
+            } catch (e) {
+                console.error('Error parsing cart from localStorage:', e);
+                cart = [];
             }
+        } else {
+            console.log('📦 No cart found in localStorage');
+            cart = [];
         }
+    } else {
+        cart = [];
+    }
+}
 
         // Update authentication buttons
         function updateAuthButtons() {
@@ -1286,7 +1472,7 @@
             }
         }
 
-        // Real-time preview updates
+        // Real-time preview updates with price calculation
         document.addEventListener('DOMContentLoaded', function() {
             // Update preview when form fields change
             const updatePreview = () => {
@@ -1296,10 +1482,28 @@
                 const height = document.getElementById('designHeight').value || '';
                 const requirements = document.getElementById('customRequirements').value || 'None';
                 
+                // Calculate price if dimensions are provided
+                let priceText = 'Not calculated';
+                if (width && height) {
+                    const calculatedPrice = parseInt(width) * parseInt(height) * 10;
+                    priceText = `₹${calculatedPrice}`;
+                }
+                
                 document.getElementById('previewSide').textContent = `Side: ${side}`;
                 document.getElementById('previewPosition').textContent = `Position: ${position}`;
                 document.getElementById('previewSize').textContent = `Size: ${width && height ? `${width}×${height} cm` : 'Not specified'}`;
                 document.getElementById('previewRequirements').textContent = `Requirements: ${requirements}`;
+                
+                // Update price in preview - create or update price element
+                let priceElement = document.getElementById('previewPrice');
+                if (!priceElement) {
+                    priceElement = document.createElement('p');
+                    priceElement.id = 'previewPrice';
+                    priceElement.className = 'price-preview';
+                    document.querySelector('.customization-preview').appendChild(priceElement);
+                }
+                priceElement.textContent = `Calculated Price: ${priceText}`;
+                priceElement.style.color = width && height ? '#28a745' : '#dc3545';
             };
             
             // Add event listeners for real-time preview
@@ -1308,6 +1512,9 @@
             document.getElementById('designWidth')?.addEventListener('input', updatePreview);
             document.getElementById('designHeight')?.addEventListener('input', updatePreview);
             document.getElementById('customRequirements')?.addEventListener('input', updatePreview);
+            
+            // Initial update
+            updatePreview();
         });
 
         // Initialize app when DOM is loaded

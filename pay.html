@@ -193,12 +193,25 @@
   </div>
   
   <div class="container">
+    <!-- Price Breakdown with GST -->
     <div class="price-breakdown" id="priceBreakdown">
       <h3>💰 Price Breakdown</h3>
-      <div class="price-line"><span>Subtotal:</span><span>₹0.00</span></div>
-      <div class="price-line"><span>Shipping:</span><span>₹0.00</span></div>
-      <div class="price-line"><span>GST (18%):</span><span>₹0.00</span></div>
-      <div class="price-line price-total"><span>Total Amount:</span><span>₹0.00</span></div>
+      <div class="price-line">
+        <span>Subtotal:</span>
+        <span>₹0.00</span>
+      </div>
+      <div class="price-line">
+        <span>Shipping:</span>
+        <span>₹0.00</span>
+      </div>
+      <div class="price-line">
+        <span>GST (18%):</span>
+        <span>₹0.00</span>
+      </div>
+      <div class="price-line price-total">
+        <span>Total Amount:</span>
+        <span>₹0.00</span>
+      </div>
     </div>
     
     <div class="upi-details">
@@ -216,181 +229,497 @@
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
+    // Global variables
     let currentUser = null;
     let checkout = null;
     let subtotal = 0;
     let tax = 0;
     let total = 0;
 
+    // Initialize the payment page
     async function initPayment() {
       try {
+        console.log("🚀 Initializing payment page...");
+        
+        // Get current user
         const userData = localStorage.getItem("currentUser");
-        if (!userData) return showError("Please login first!"), setTimeout(()=>location.href="login.html",2000);
+        if (!userData) {
+          showError("Please login first!");
+          setTimeout(() => window.location.href = "login.html", 2000);
+          return;
+        }
+
         currentUser = JSON.parse(userData);
         const username = currentUser.username || currentUser.email;
+        
+        if (!username) {
+          showError("Invalid user data. Please login again.");
+          setTimeout(() => window.location.href = "login.html", 2000);
+          return;
+        }
 
-        const checkoutData = localStorage.getItem("checkout_" + username);
-        if (!checkoutData) return showError("No items found for checkout."), setTimeout(()=>location.href="index.html",2000);
+        // Get checkout data
+        const checkoutKey = "checkout_" + username;
+        const checkoutData = localStorage.getItem(checkoutKey);
+        
+        if (!checkoutData) {
+          showError("No items found for checkout. Please add items to cart first.");
+          setTimeout(() => window.location.href = "index.html", 3000);
+          return;
+        }
 
         checkout = JSON.parse(checkoutData);
-        if (!checkout.items || checkout.items.length === 0) return showError("No items to pay.");
+        
+        if (!checkout.items || checkout.items.length === 0) {
+          showError("No items in checkout. Please add items to cart first.");
+          setTimeout(() => window.location.href = "index.html", 3000);
+          return;
+        }
 
-        subtotal = checkout.subtotal || checkout.items.reduce((s, i)=>s + (i.price * i.quantity), 0);
+        // Calculate totals from checkout data
+        subtotal = checkout.subtotal || checkout.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         tax = checkout.tax || subtotal * 0.18;
         total = checkout.total || subtotal + tax;
 
+        console.log("📊 Order totals:", { subtotal, tax, total });
+
+        // Render order items
         renderOrderItems();
         updatePriceBreakdown();
         setupEventListeners();
-      } catch (e) {
-        showError("Error loading payment page: " + e.message);
+
+        console.log("✅ Payment page initialized successfully");
+
+      } catch (error) {
+        console.error("❌ Initialization error:", error);
+        showError("Error loading payment page: " + error.message);
       }
     }
 
+    // Setup event listeners
     function setupEventListeners() {
-      document.getElementById("payBtn").addEventListener("click", handlePayment);
-      document.getElementById("paidBtn").addEventListener("click", handleOrderSave);
+      const payBtn = document.getElementById("payBtn");
+      const paidBtn = document.getElementById("paidBtn");
+
+      if (payBtn) {
+        payBtn.addEventListener("click", handlePayment);
+      }
+
+      if (paidBtn) {
+        paidBtn.addEventListener("click", handleOrderSave);
+      }
     }
 
+    // Update price breakdown display
     function updatePriceBreakdown() {
-      const b = document.getElementById("priceBreakdown");
-      b.innerHTML = `
+      const breakdown = document.getElementById("priceBreakdown");
+      breakdown.innerHTML = `
         <h3>💰 Price Breakdown</h3>
-        <div class="price-line"><span>Subtotal:</span><span>₹${subtotal.toFixed(2)}</span></div>
-        <div class="price-line"><span>Shipping:</span><span>₹0.00</span></div>
-        <div class="price-line"><span>GST (18%):</span><span>₹${tax.toFixed(2)}</span></div>
-        <div class="price-line price-total"><span>Total Amount:</span><span>₹${total.toFixed(2)}</span></div>
+        <div class="price-line">
+          <span>Subtotal:</span>
+          <span>₹${subtotal.toFixed(2)}</span>
+        </div>
+        <div class="price-line">
+          <span>Shipping:</span>
+          <span>₹0.00</span>
+        </div>
+        <div class="price-line">
+          <span>GST (18%):</span>
+          <span>₹${tax.toFixed(2)}</span>
+        </div>
+        <div class="price-line price-total">
+          <span>Total Amount:</span>
+          <span>₹${total.toFixed(2)}</span>
+        </div>
       `;
     }
 
+    // Render order items
     function renderOrderItems() {
-      const c = document.getElementById("orderContainer");
-      if (!checkout || !checkout.items || checkout.items.length === 0) {
-        c.innerHTML = "<div class='error'>No items found for payment.</div>";
-        document.getElementById("payBtn").disabled = true;
-        return;
-      }
-      let html = "<h2>📦 Your Order Summary</h2>";
-      checkout.items.forEach(item => {
-        const itemSubtotal = item.price * item.quantity;
-        const hasCustomization = item.placement_position || item.custom_requirements;
-        html += `
-          <div class="order-item">
-            <img src="${item.image}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/120?text=No+Image'">
-            <div class="details">
-              <h2>${item.name}</h2>
-              <p><strong>Price:</strong> ₹${item.price}</p>
-              <p><strong>Quantity:</strong> ${item.quantity}</p>
-              ${hasCustomization ? `
-                <div style="background:#f0f8ff;padding:10px;border-radius:5px;margin:10px 0;border-left:3px solid #007bff;">
-                  ${item.placement_position ? `<p>📍 ${(item.design_side||'front').toUpperCase()} - ${item.placement_position}</p>`:''}
-                  ${(item.design_width>0 && item.design_height>0)?`<p>📏 ${item.design_width}cm × ${item.design_height}cm</p>`:''}
-                  ${item.custom_requirements?`<p>📝 ${item.custom_requirements}</p>`:''}
-                </div>`:''}
-              <p><strong>Subtotal:</strong> ₹${itemSubtotal.toFixed(2)}</p>
-            </div>
-          </div>`;
-      });
-      c.innerHTML = html;
+        const orderContainer = document.getElementById("orderContainer");
+
+        if (!checkout || !checkout.items || checkout.items.length === 0) {
+            orderContainer.innerHTML = "<div class='error'>No items found for payment.</div>";
+            document.getElementById("payBtn").disabled = true;
+            return;
+        }
+
+        let orderHTML = '<h2>📦 Your Order Summary</h2>';
+        checkout.items.forEach((item, index) => {
+            const itemSubtotal = item.price * item.quantity;
+            const hasCustomization = item.placement_position || item.custom_requirements;
+            
+            orderHTML += `
+                <div class="order-item">
+                    <img src="${item.image}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/120?text=Image+Not+Found'">
+                    <div class="details">
+                        <h2>${item.name}</h2>
+                        <p><strong>Price:</strong> ₹${item.price}</p>
+                        <p><strong>Quantity:</strong> ${item.quantity}</p>
+                        ${hasCustomization ? `
+                            <div style="background: #f0f8ff; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 3px solid #007bff;">
+                                <p style="margin: 2px 0; font-size: 14px;"><strong>Customization:</strong></p>
+                                ${item.placement_position ? `<p style="margin: 2px 0; font-size: 14px;">📍 ${(item.design_side || 'front').toUpperCase()} - ${item.placement_position}</p>` : ''}
+                                ${(item.design_width > 0 && item.design_height > 0) ? `<p style="margin: 2px 0; font-size: 14px;">📏 ${item.design_width}cm × ${item.design_height}cm</p>` : ''}
+                                ${item.custom_requirements ? `<p style="margin: 2px 0; font-size: 14px;">📝 ${item.custom_requirements}</p>` : ''}
+                            </div>
+                        ` : ''}
+                        <p><strong>Subtotal:</strong> ₹${itemSubtotal.toFixed(2)}</p>
+                    </div>
+                </div>
+            `;
+        });
+
+        orderContainer.innerHTML = orderHTML;
     }
 
+    // Handle payment process
     function handlePayment() {
+      if (!checkout || !currentUser) return;
+
+      console.log("💳 Starting payment process...");
+
       const upiID = "dharneeshdragons@okhdfcbank";
       const payeeName = "Fine Graphics";
       const upiLink = `upi://pay?pa=${upiID}&pn=${encodeURIComponent(payeeName)}&am=${total}&cu=INR`;
 
-      const qr = document.getElementById("qrcode");
-      qr.innerHTML = "<div class='loading'>Generating QR Code...</div>";
-      QRCode.toDataURL(upiLink,{width:220,margin:2},(err,url)=>{
-        if(err)return qr.innerHTML="<div class='error'>Failed to generate QR code</div>";
-        qr.innerHTML = `
+      // Generate and display QR code
+      const qrContainer = document.getElementById("qrcode");
+      qrContainer.innerHTML = "<div class='loading'>Generating QR Code...</div>";
+
+      QRCode.toDataURL(upiLink, { 
+        width: 220,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      }, function (err, url) {
+        if (err) {
+          qrContainer.innerHTML = "<div class='error'>Failed to generate QR code</div>";
+          console.error("QR Code Error:", err);
+          return;
+        }
+
+        qrContainer.innerHTML = `
           <h3>📱 Scan QR Code to Pay</h3>
-          <img src="${url}">
+          <img src="${url}" alt="UPI Payment QR Code">
           <p><strong>Amount:</strong> ₹${total.toFixed(2)}</p>
-          <p><em>After payment, click 'I Have Paid' below</em></p>`;
+          <p><strong>Includes 18% GST:</strong> ₹${tax.toFixed(2)}</p>
+          <p><em>After payment, click "I Have Paid" below</em></p>
+        `;
+
+        console.log("✅ QR Code generated successfully");
       });
-      document.getElementById("paidBtn").style.display="block";
-      document.getElementById("payBtn").style.display="none";
-      setTimeout(()=>window.location.href=upiLink,1000);
+
+      // Show "I Have Paid" button
+      document.getElementById("paidBtn").style.display = "block";
+      document.getElementById("payBtn").style.display = "none";
+      
+      // Try to open UPI app (mobile devices)
+      setTimeout(() => {
+        console.log("📱 Attempting to open UPI app...");
+        window.location.href = upiLink;
+      }, 1000);
     }
 
+    // Handle order confirmation - FIXED VERSION
     async function handleOrderSave() {
-      try {
+        try {
+            console.log("🟢 handleOrderSave() triggered");
+
+            if (!checkout || !currentUser) {
+                showError("No order data found. Please try again.");
+                console.log("❌ Missing checkout or user data");
+                return;
+            }
+
+            const username = currentUser.username || currentUser.email;
+            const paidBtn = document.getElementById("paidBtn");
+            const successBox = document.getElementById("successBox");
+
+            paidBtn.disabled = true;
+            paidBtn.textContent = "💾 Saving Order...";
+
+            // Build the order data
+            const orderData = {
+                username: username,
+                items: checkout.items.map(item => ({
+                    name: item.name,
+                    price: parseFloat(item.price) || 0,
+                    quantity: parseInt(item.quantity) || 1,
+                    image: item.image || "",
+                    placement_position: item.placement_position || "",
+                    design_side: item.design_side || "front",
+                    design_width: parseInt(item.design_width) || 0,
+                    design_height: parseInt(item.design_height) || 0,
+                    custom_requirements: item.custom_requirements || ""
+                })),
+                subtotal: subtotal,
+                tax: tax,
+                total: total,
+                shipping: checkout.shipping || {},
+                orderDate: new Date().toISOString(),
+                status: "confirmed"
+            };
+
+            console.log("📦 Sending order to backend:", orderData);
+
+            // Remove purchased items from cart FIRST
+            await removePurchasedItemsFromCart();
+
+            const response = await fetch("/saveOrder", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(orderData)
+            });
+
+            console.log("📬 Response status:", response.status);
+            const result = await response.json();
+            console.log("📦 Backend response:", result);
+
+            if (result.success) {
+                console.log("✅ Order saved successfully. Showing success message...");
+
+                // Show success box
+                successBox.style.display = "block";
+                successBox.classList.add("success-animation");
+                successBox.innerHTML = `
+                    <div class="success-animation">
+                        ✅ <strong>Payment Successful!</strong><br>
+                        📦 Order ID: ${result.orderId || 'N/A'}<br>
+                        🛒 Items removed from cart<br>
+                        🔄 Redirecting to orders page...
+                    </div>
+                `;
+
+                // Clear checkout data
+                localStorage.removeItem("checkout_" + username);
+
+                // Redirect after short delay
+                setTimeout(() => {
+                    console.log("➡️ Redirecting to orders page...");
+                    window.location.href = "orders.html";
+                }, 2000);
+            } else {
+                console.error("❌ Backend returned error:", result.message);
+                showError("Failed to save order: " + (result.message || "Unknown error"));
+                paidBtn.disabled = false;
+                paidBtn.textContent = "✅ I Have Paid - Confirm Order";
+            }
+
+        } catch (error) {
+            console.error("💥 Error during handleOrderSave:", error);
+            showError("Error saving order: " + error.message);
+            const paidBtn = document.getElementById("paidBtn");
+            paidBtn.disabled = false;
+            paidBtn.textContent = "✅ I Have Paid - Confirm Order";
+        }
+    }
+// Remove purchased items from cart via backend - IMPROVED
+// Remove purchased items from cart via backend - RENDER COMPATIBLE VERSION
+async function removePurchasedItemsFromCart() {
+    try {
+        if (!currentUser || !checkout || !checkout.items) {
+            console.log("❌ Cannot remove items: missing data");
+            return;
+        }
+
+        const username = currentUser.username || currentUser.email;
+        const purchasedItems = checkout.items.map(item => ({
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+            placement_position: item.placement_position || '',
+            design_side: item.design_side || 'front',
+            design_width: item.design_width || 0,
+            design_height: item.design_height || 0,
+            custom_requirements: item.custom_requirements || ''
+        }));
+        
+        console.log("🗑️ Requesting backend to remove purchased items:", purchasedItems);
+
+        // Use Render backend URL - UPDATE THIS WITH YOUR ACTUAL RENDER URL
+        const API_BASE_URL = window.location.origin; // This automatically uses your Render URL
+        
+        const response = await fetch(`${API_BASE_URL}/removeFromCart`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: username,
+                items: purchasedItems
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log(`✅ Backend removed ${result.removed_count || result.message} purchased items`);
+            
+            // Update local storage - remove only purchased items, not entire cart
+            const cartKey = `cart_${username}`;
+            const currentCart = JSON.parse(localStorage.getItem(cartKey) || '[]');
+            
+            if (currentCart.length > 0) {
+                // Filter out the purchased items from current cart
+                const updatedCart = currentCart.filter(cartItem => {
+                    // Check if this cart item matches any purchased item
+                    return !purchasedItems.some(purchasedItem => 
+                        purchasedItem.name === cartItem.name &&
+                        purchasedItem.price === cartItem.price &&
+                        purchasedItem.quantity === cartItem.quantity &&
+                        purchasedItem.placement_position === (cartItem.placement_position || '') &&
+                        purchasedItem.design_side === (cartItem.design_side || 'front') &&
+                        purchasedItem.design_width === (cartItem.design_width || 0) &&
+                        purchasedItem.design_height === (cartItem.design_height || 0) &&
+                        purchasedItem.custom_requirements === (cartItem.custom_requirements || '')
+                    );
+                });
+                
+                // Save the updated cart back to localStorage
+                localStorage.setItem(cartKey, JSON.stringify(updatedCart));
+                console.log(`✅ Local storage updated: ${currentCart.length - updatedCart.length} items removed, ${updatedCart.length} items remaining`);
+            } else {
+                console.log("ℹ️ No items in local storage cart to update");
+            }
+            
+        } else {
+            console.error("❌ Backend failed to remove items:", result.message);
+            // Don't throw error - we don't want to block order success
+        }
+
+    } catch (error) {
+        console.error("❌ Error removing purchased items from cart:", error);
+        // Don't throw error - we don't want to block order success
+    }
+}
+
+// Remove purchased items from cart
+// Handle order confirmation - DEBUG VERSION
+async function handleOrderSave() {
+    try {
+        console.log("🟢 handleOrderSave() triggered");
+
+        if (!checkout || !currentUser) {
+            showError("No order data found. Please try again.");
+            console.log("❌ Missing checkout or user data");
+            return;
+        }
+
         const username = currentUser.username || currentUser.email;
         const paidBtn = document.getElementById("paidBtn");
         const successBox = document.getElementById("successBox");
+
         paidBtn.disabled = true;
         paidBtn.textContent = "💾 Saving Order...";
 
+        // Build the order data
         const orderData = {
-          username,
-          items: checkout.items,
-          subtotal, tax, total,
-          orderDate: new Date().toISOString(),
-          status: "confirmed"
+            username: username,
+            items: checkout.items.map(item => ({
+                name: item.name,
+                price: parseFloat(item.price) || 0,
+                quantity: parseInt(item.quantity) || 1,
+                image: item.image || "",
+                placement_position: item.placement_position || "",
+                design_side: item.design_side || "front",
+                design_width: parseInt(item.design_width) || 0,
+                design_height: parseInt(item.design_height) || 0,
+                custom_requirements: item.custom_requirements || ""
+            })),
+            subtotal: subtotal,
+            tax: tax,
+            total: total,
+            shipping: checkout.shipping || {},
+            orderDate: new Date().toISOString(),
+            status: "confirmed"
         };
 
-        // ✅ Remove purchased items first
-        await removePurchasedItemsFromCart();
+        console.log("📦 Sending order to backend:", orderData);
 
-        // ✅ Re-render after clearing
-        renderOrderItems();
-        updatePriceBreakdown();
+        // STEP 1: First save the order
+        const response = await fetch("/saveOrder", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(orderData)
+        });
 
-        // Simulate backend call
-        const result = { success: true, orderId: "FG" + Date.now() };
+        console.log("📬 Response status:", response.status);
+        const result = await response.json();
+        console.log("📦 Backend response:", result);
 
         if (result.success) {
-          successBox.style.display = "block";
-          successBox.classList.add("success-animation");
-          successBox.innerHTML = `
-            ✅ <strong>Payment Successful!</strong><br>
-            📦 Order ID: ${result.orderId}<br>
-            🛒 Items removed from cart<br>
-            🔄 Redirecting to orders page...
-          `;
-          localStorage.removeItem("checkout_" + username);
-          setTimeout(()=>location.href="orders.html",2000);
+            console.log("✅ Order saved successfully. Now removing from cart...");
+            
+            // STEP 2: Only after order is saved, remove items from cart
+            try {
+                await removePurchasedItemsFromCart();
+                console.log("✅ Cart items removed successfully");
+            } catch (cartError) {
+                console.error("❌ Error removing cart items, but order was saved:", cartError);
+                // Don't throw error here - order is already saved
+            }
+
+            // Show success box
+            successBox.style.display = "block";
+            successBox.classList.add("success-animation");
+            successBox.innerHTML = `
+                <div class="success-animation">
+                    ✅ <strong>Payment Successful!</strong><br>
+                    📦 Order ID: ${result.orderId || 'N/A'}<br>
+                    🛒 Items removed from cart<br>
+                    🔄 Redirecting to orders page...
+                </div>
+            `;
+
+            // Clear checkout data
+            localStorage.removeItem("checkout_" + username);
+
+            // Redirect after short delay
+            setTimeout(() => {
+                console.log("➡️ Redirecting to orders page...");
+                window.location.href = "orders.html";
+            }, 2000);
         } else {
-          showError("Failed to save order.");
+            console.error("❌ Backend returned error:", result.message);
+            showError("Failed to save order: " + (result.message || "Unknown error"));
+            paidBtn.disabled = false;
+            paidBtn.textContent = "✅ I Have Paid - Confirm Order";
         }
-      } catch (err) {
-        showError("Error saving order: " + err.message);
-      }
+
+    } catch (error) {
+        console.error("💥 Error during handleOrderSave:", error);
+        showError("Error saving order: " + error.message);
+        const paidBtn = document.getElementById("paidBtn");
+        paidBtn.disabled = false;
+        paidBtn.textContent = "✅ I Have Paid - Confirm Order";
+    }
+}
+    // Show error message
+    function showError(message) {
+      const orderContainer = document.getElementById("orderContainer");
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error';
+      errorDiv.innerHTML = `
+        <strong>❌ Error:</strong> ${message}
+        <br><br>
+        <button onclick="window.location.href='index.html'" class="btn" style="background: #dc3545; margin: 5px;">🏠 Return to Home</button>
+        <button onclick="location.reload()" class="btn" style="background: #ffc107; color: black; margin: 5px;">🔄 Try Again</button>
+      `;
+      orderContainer.appendChild(errorDiv);
     }
 
-    async function removePurchasedItemsFromCart() {
-      try {
-        const username = currentUser.username || currentUser.email;
-        const cartKey = "cart_" + username;
-        const savedCart = localStorage.getItem(cartKey);
-        if (!savedCart) return;
-        let cart = JSON.parse(savedCart);
-        const newCart = cart.filter(cartItem => 
-          !checkout.items.some(p => 
-            cartItem.name === p.name &&
-            cartItem.placement_position === p.placement_position &&
-            cartItem.custom_requirements === p.custom_requirements
-          )
-        );
-        localStorage.setItem(cartKey, JSON.stringify(newCart));
-      } catch (e) {
-        console.error("Cart remove error:", e);
-      }
-    }
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', initPayment);
 
-    function showError(msg) {
-      const c = document.getElementById("orderContainer");
-      const d = document.createElement("div");
-      d.className="error";
-      d.innerHTML = `
-        <strong>❌ Error:</strong> ${msg}<br><br>
-        <button onclick="window.location.href='index.html'" class="btn" style="background:#dc3545;">🏠 Home</button>
-        <button onclick="location.reload()" class="btn" style="background:#ffc107;color:black;">🔄 Retry</button>`;
-      c.appendChild(d);
-    }
-
-    document.addEventListener("DOMContentLoaded", initPayment);
+    // Add some console styling for better debugging
+    console.log('%c🎨 Fine Graphics Payment System', 'color: #007bff; font-size: 16px; font-weight: bold;');
+    console.log('%c✅ Payment processing active', 'color: #28a745;');
   </script>
 </body>
 </html>

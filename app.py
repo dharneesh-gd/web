@@ -385,6 +385,69 @@ def init_databases():
         print("⚠ Some databases failed to initialize!")
     
     return all_success
+
+@app.route('/removeFromCart', methods=['POST'])
+def remove_from_cart():
+    """Remove specific items from user's cart - FLEXIBLE VERSION"""
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        items_to_remove = data.get('items', [])
+        
+        print(f"🛒 REMOVE FROM CART: {username}, removing {len(items_to_remove)} items")
+        
+        if not username:
+            return jsonify({"success": False, "message": "Username required"}), 400
+        
+        conn = sqlite3.connect(USERS_DB)
+        cur = conn.cursor()
+        
+        removed_count = 0
+        for item in items_to_remove:
+            try:
+                # First try exact match with all customization fields
+                cur.execute("""DELETE FROM user_cart 
+                              WHERE username=? AND design_name=?
+                              AND placement_position=? AND design_side=?
+                              AND design_width=? AND design_height=?
+                              AND custom_requirements=?""",
+                            (username, 
+                             item.get('name'), 
+                             item.get('placement_position', ''),
+                             item.get('design_side', 'front'),
+                             item.get('design_width', 0),
+                             item.get('design_height', 0),
+                             item.get('custom_requirements', '')))
+                
+                rows_affected = cur.rowcount
+                
+                # If no exact match found, try with just name and basic fields (fallback)
+                if rows_affected == 0:
+                    print(f"🔄 No exact match found for {item.get('name')}, trying fallback match...")
+                    cur.execute("""DELETE FROM user_cart 
+                                  WHERE username=? AND design_name=?
+                                  AND quantity=?""",
+                                (username, 
+                                 item.get('name'),
+                                 item.get('quantity', 1)))
+                    rows_affected = cur.rowcount
+                
+                removed_count += rows_affected
+                print(f"📝 Removed {rows_affected} items for: {item.get('name')}")
+                
+            except Exception as e:
+                print(f"⚠ Failed to remove cart item {item}: {e}")
+                continue
+        
+        conn.commit()
+        conn.close()
+        
+        print(f"✅ REMOVED FROM CART: {removed_count} items for {username}")
+        return jsonify({"success": True, "message": f"Removed {removed_count} items from cart", "removed_count": removed_count})
+        
+    except Exception as e:
+        print(f"💥 REMOVE FROM CART ERROR: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
 # ==================== SERVE STATIC FILES ====================
 
 @app.route('/')
