@@ -227,20 +227,24 @@
         }
 
         .customization-details {
-            margin-top: 0.5rem;
-            padding: 0.5rem;
-            background: #f8f9fa;
-            border-radius: 5px;
-            border-left: 3px solid #667eea;
-        }
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border-left: 3px solid #667eea;
+}
 
-        .customization-details small {
-            display: block;
-            margin-bottom: 0.2rem;
-            color: #555;
-            font-size: 0.8rem;
-            line-height: 1.3;
-        }
+.customization-details small {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: #555;
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+.customization-details small strong {
+    color: #333;
+}
 
         .summary-line {
             display: flex;
@@ -462,112 +466,123 @@
         }
 
         // Render checkout form
-        function renderCheckout() {
-            if (selectedItems.length === 0) return;
+        // Render checkout form
+function renderCheckout() {
+    if (selectedItems.length === 0) return;
 
-            const subtotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const tax = subtotal * 0.18; // 18% tax
-            const total = subtotal + tax;
+    const subtotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const tax = subtotal * 0.18; // 18% tax
+    const total = subtotal + tax;
 
-            const checkoutHTML = `
-                <div class="checkout-form">
-                    <h3 class="form-title">Shipping Information</h3>
-                    <form id="checkoutForm">
-                        <div class="form-group">
-                            <label for="fullName">Full Name *</label>
-                            <input type="text" id="fullName" class="form-control" required 
-                                   value="${currentUser.fname} ${currentUser.lname}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="email">Email Address *</label>
-                            <input type="email" id="email" class="form-control" required 
-                                   value="${currentUser.email}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="phone">Phone Number *</label>
-                            <input type="tel" id="phone" class="form-control" required 
-                                   value="${currentUser.mobile || ''}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="address">Shipping Address *</label>
-                            <textarea id="address" class="form-control" rows="3" required>${currentUser.address || ''}</textarea>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="district">District *</label>
-                                <input type="text" id="district" class="form-control" required 
-                                       value="${currentUser.district || ''}">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="country">Country *</label>
-                                <input type="text" id="country" class="form-control" value="India" required>
-                            </div>
-                        </div>
-                    </form>
+    const checkoutHTML = `
+        <div class="checkout-form">
+            <h3 class="form-title">Shipping Information</h3>
+            <form id="checkoutForm">
+                <div class="form-group">
+                    <label for="fullName">Full Name *</label>
+                    <input type="text" id="fullName" class="form-control" required 
+                           value="${currentUser.fname} ${currentUser.lname}">
                 </div>
                 
-                <div class="order-summary">
-                    <h3 class="summary-title">Order Summary</h3>
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" class="form-control" required 
+                           value="${currentUser.email}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" id="phone" class="form-control" required 
+                           value="${currentUser.mobile || ''}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Shipping Address *</label>
+                    <textarea id="address" class="form-control" rows="3" required>${currentUser.address || ''}</textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="district">District *</label>
+                        <input type="text" id="district" class="form-control" required 
+                               value="${currentUser.district || ''}">
+                    </div>
                     
-                    <div class="order-items">
-                        ${selectedItems.map(item => `
-                            <div class="order-item">
-                                <div class="item-info">
-                                    <img src="${item.image}" alt="${item.name}" class="item-image" 
-                                         onerror="this.src='https://via.placeholder.com/60?text=No+Image'">
-                                    <div class="item-details">
-                                        <h4>${item.name}</h4>
-                                        <div class="item-price">₹${item.price.toFixed(2)}</div>
-                                        <div class="item-quantity">Qty: ${item.quantity}</div>
-                                        ${item.placement_position ? `
-                                        <div class="customization-details">
-                                            <small><strong>Side:</strong> ${item.design_side || 'Front'}</small>
-                                            <small><strong>Position:</strong> ${item.placement_position}</small>
-                                            ${item.design_width > 0 ? `<small><strong>Size:</strong> ${item.design_width}cm × ${item.design_height}cm</small>` : ''}
-                                            ${item.custom_requirements ? `<small><strong>Requirements:</strong> ${item.custom_requirements}</small>` : ''}
-                                        </div>` : ''}
+                    <div class="form-group">
+                        <label for="country">Country *</label>
+                        <input type="text" id="country" class="form-control" value="India" required>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="order-summary">
+            <h3 class="summary-title">Order Summary</h3>
+            
+            <div class="order-items">
+                ${selectedItems.map(item => {
+                    // Format display names
+                    const colorDisplay = item.tshirt_color ? item.tshirt_color.charAt(0).toUpperCase() + item.tshirt_color.slice(1) : '';
+                    const tshirtTypeDisplay = item.tshirt_type ? 
+                        item.tshirt_type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : '';
+                    
+                    return `
+                        <div class="order-item">
+                            <div class="item-info">
+                                <img src="${item.image}" alt="${item.name}" class="item-image" 
+                                     onerror="this.src='https://via.placeholder.com/60?text=No+Image'">
+                                <div class="item-details">
+                                    <h4>${item.name}</h4>
+                                    <div class="item-price">₹${item.price.toFixed(2)}</div>
+                                    <div class="item-quantity">Qty: ${item.quantity}</div>
+                                    <div class="customization-details">
+                                        ${item.gender ? `<small><strong>Gender:</strong> ${item.gender.charAt(0).toUpperCase() + item.gender.slice(1)}</small>` : ''}
+                                        ${colorDisplay ? `<small><strong>Color:</strong> ${colorDisplay}</small>` : ''}
+                                        ${item.tshirt_size ? `<small><strong>Size:</strong> ${item.tshirt_size}</small>` : ''}
+                                        ${tshirtTypeDisplay ? `<small><strong>T-Shirt Type:</strong> ${tshirtTypeDisplay}</small>` : ''}
+                                        ${item.design_side ? `<small><strong>Design Side:</strong> ${item.design_side}</small>` : ''}
+                                        ${item.placement_position ? `<small><strong>Position:</strong> ${item.placement_position}</small>` : ''}
+                                        ${item.design_width > 0 ? `<small><strong>Design Size:</strong> ${item.design_width}cm × ${item.design_height}cm</small>` : ''}
+                                        ${item.custom_requirements ? `<small><strong>Requirements:</strong> ${item.custom_requirements}</small>` : ''}
                                     </div>
                                 </div>
-                                <div class="item-total">
-                                    ₹${(item.price * item.quantity).toFixed(2)}
-                                </div>
                             </div>
-                        `).join('')}
-                    </div>
-                    
-                    <div class="summary-line">
-                        <span>Subtotal:</span>
-                        <span>₹${subtotal.toFixed(2)}</span>
-                    </div>
-                    
-                    <div class="summary-line">
-                        <span>Shipping:</span>
-                        <span>₹0.00</span>
-                    </div>
-                    
-                    <div class="summary-line">
-                        <span>Tax (18%):</span>
-                        <span>₹${tax.toFixed(2)}</span>
-                    </div>
-                    
-                    <div class="summary-total">
-                        <span>Total:</span>
-                        <span>₹${total.toFixed(2)}</span>
-                    </div>
-                    
-                    <button class="place-order-btn" onclick="placeOrder()">
-                        Place Order - ₹${total.toFixed(2)}
-                    </button>
-                </div>
-            `;
+                            <div class="item-total">
+                                ₹${(item.price * item.quantity).toFixed(2)}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            
+            <div class="summary-line">
+                <span>Subtotal:</span>
+                <span>₹${subtotal.toFixed(2)}</span>
+            </div>
+            
+            <div class="summary-line">
+                <span>Shipping:</span>
+                <span>₹0.00</span>
+            </div>
+            
+            <div class="summary-line">
+                <span>Tax (18%):</span>
+                <span>₹${tax.toFixed(2)}</span>
+            </div>
+            
+            <div class="summary-total">
+                <span>Total:</span>
+                <span>₹${total.toFixed(2)}</span>
+            </div>
+            
+            <button class="place-order-btn" onclick="placeOrder()">
+                Place Order - ₹${total.toFixed(2)}
+            </button>
+        </div>
+    `;
 
-            document.getElementById('checkoutContainer').innerHTML = checkoutHTML;
-        }
+    document.getElementById('checkoutContainer').innerHTML = checkoutHTML;
+}
 
         // Show empty cart message
         function showEmptyCart(message) {

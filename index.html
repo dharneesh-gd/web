@@ -59,7 +59,12 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 
         /* Header Styles */
         header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, 
+                rgba(102, 126, 234, 0.9) 0%, 
+                rgba(118, 75, 162, 0.9) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             padding: 1rem 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -84,10 +89,50 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
         }
 
         /* Profile Dropdown Styles */
-        .profile-dropdown {
-            position: relative;
-            display: inline-block;
-        }
+        /* Fix Profile Dropdown Z-Index */
+.profile-dropdown {
+    position: relative;
+    display: inline-block;
+    z-index: 1001; /* Higher z-index to ensure it stays on top */
+}
+
+.profile-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    box-shadow: 
+        0 15px 35px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    min-width: 200px;
+    z-index: 1002; /* Ensure dropdown menu is above everything */
+    display: none;
+    margin-top: 0.5rem;
+}
+
+.profile-dropdown-menu.show {
+    display: block;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Ensure header has proper stacking context */
+header {
+    background: linear-gradient(135deg, 
+        rgba(102, 126, 234, 0.9) 0%, 
+        rgba(118, 75, 162, 0.9) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: relative;
+    z-index: 1000; /* Ensure header creates stacking context */
+}
 
         .profile-menu-toggle {
             background: none;
@@ -108,9 +153,14 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
             position: absolute;
             top: 100%;
             right: 0;
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
             min-width: 200px;
             z-index: 1000;
             display: none;
@@ -420,12 +470,41 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9)), url('https://images.unsplash.com/photo-1558655146-9f40138edfeb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2064&q=80');
+            background: linear-gradient(
+                rgba(102, 126, 234, 0.85), 
+                rgba(118, 75, 162, 0.85)
+            ), url('https://images.unsplash.com/photo-1558655146-9f40138edfeb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2064&q=80');
             background-size: cover;
             background-position: center;
             color: white;
             text-align: center;
             padding: 6rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(255, 255, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(255, 255, 255, 0.1) 100%);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .hero > *:not(.floating-elements) {
+            position: relative;
+            z-index: 2;
         }
 
         .hero h1 {
@@ -441,28 +520,87 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
             margin-left: auto;
             margin-right: auto;
         }
-/* Add this to your CSS */
-.btn-cart.added {
-    background: #dc3545 !important; /* Red color for remove */
-}
 
-.btn-cart.added:hover {
-    background: #c82333 !important; /* Darker red on hover */
-}
+        /* Add this to your CSS */
+        .btn-cart.added {
+            background: #dc3545 !important; /* Red color for remove */
+        }
 
-.btn-wishlist.added {
-    background: #6c757d !important; /* Gray color for remove */
-}
+        .btn-cart.added:hover {
+            background: #c82333 !important; /* Darker red on hover */
+        }
 
-.btn-wishlist.added:hover {
-    background: #5a6268 !important; /* Darker gray on hover */
-}
-        .btn-hero {
-            background: #ffd700;
-            color: #333;
+        .btn-wishlist.added {
+            background: #6c757d !important; /* Gray color for remove */
+        }
+
+        .btn-wishlist.added:hover {
+            background: #5a6268 !important; /* Darker gray on hover */
+        }
+
+        /* Hero Buttons */
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .btn-hero, .btn-custom {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
             padding: 1rem 2rem;
             font-size: 1.1rem;
             font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .btn-hero::before, .btn-custom::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.4),
+                transparent
+            );
+            transition: left 0.5s;
+        }
+
+        .btn-hero:hover::before, .btn-custom:hover::before {
+            left: 100%;
+        }
+
+        .btn-hero:hover, .btn-custom:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 10px 25px rgba(0, 0, 0, 0.2),
+                0 0 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-custom {
+            background: #25D366; /* WhatsApp green */
+        }
+
+        .btn-custom:hover {
+            background: #128C7E; /* Darker WhatsApp green */
         }
 
         /* Designs Section */
@@ -470,6 +608,53 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
             padding: 4rem 2rem;
             max-width: 1200px;
             margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Section Header for proper centering */
+        .section-header {
+            text-align: center;
+            width: 100%;
+            margin-bottom: 3rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Centered Glass Section Title */
+        .section-title {
+            position: relative;
+            display: inline-block;
+            text-align: center;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            font-size: 2.5rem;
+            color: #333;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 3px;
+            animation: titleUnderline 2s ease-in-out infinite;
+        }
+
+        @keyframes titleUnderline {
+            0%, 100% { width: 100px; }
+            50% { width: 150px; }
         }
 
         /* Enhanced disabled states for login required */
@@ -544,7 +729,6 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 
         .btn-profile-small:hover {
             background: #138496;
-            color: white;
         }
 
         .btn-login-small {
@@ -560,7 +744,6 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 
         .btn-login-small:hover {
             background: #5a6fd8;
-            color: white;
         }
 
         /* Tooltip styles for better UX */
@@ -595,11 +778,37 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
             margin-bottom: -5px;
         }
 
-        .section-title {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-            color: #333;
+        /* Enhanced Color Dropdown Styles */
+        .color-dropdown option {
+            padding: 10px 15px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .color-dropdown {
+            font-size: 14px;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .color-dropdown:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.2);
+        }
+
+        /* Style the dropdown arrow */
+        .color-dropdown {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px;
+            padding-right: 40px;
         }
 
         .designs-grid {
@@ -609,30 +818,63 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
             margin-bottom: 3rem;
         }
 
+        /* Enhanced Design Cards with Glass Effect */
         .design-card {
-            background: white;
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
             cursor: pointer;
         }
 
-        .design-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        .design-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transition: left 0.5s;
         }
 
+        .design-card:hover::before {
+            left: 100%;
+        }
+
+        .design-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.15),
+                0 0 80px rgba(102, 126, 234, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        /* Enhanced Image Hover Effects */
         .design-image {
             width: 100%;
             height: 200px;
             object-fit: cover;
             cursor: pointer;
-            transition: transform 0.3s;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: brightness(0.95);
         }
 
         .design-image:hover {
-            transform: scale(1.02);
+            filter: brightness(1.05) contrast(1.1);
+            transform: scale(1.05) rotate(1deg);
         }
 
         .design-info {
@@ -721,6 +963,25 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
             padding: 3rem;
             color: #666;
             font-size: 1.1rem;
+            position: relative;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 3px;
+            animation: loadingBar 1.5s ease-in-out infinite;
+        }
+
+        @keyframes loadingBar {
+            0%, 100% { width: 50px; opacity: 0.7; }
+            50% { width: 100px; opacity: 1; }
         }
 
         .error {
@@ -756,7 +1017,7 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
         .user-info {
             display: flex;
             align-items: center;
-            gap: 0.5rem; /* Reduced gap */
+            gap: 0.8rem;
             color: white;
             flex-wrap: wrap;
         }
@@ -817,15 +1078,21 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
             align-items: center;
         }
 
+        /* Enhanced Modal Glass Effects */
         .modal-content {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
             padding: 2rem;
-            border-radius: 10px;
             width: 90%;
             max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
         .modal-header {
@@ -902,65 +1169,6 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            color: white;
-            flex-wrap: wrap;
-        }
-/* Add this to your existing CSS */
-.hero-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 1.5rem;
-}
-
-.btn-custom {
-    background: #25D366; /* WhatsApp green */
-    color: white;
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-    font-weight: bold;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.3s;
-}
-
-.btn-custom:hover {
-    background: #128C7E; /* Darker WhatsApp green */
-    transform: translateY(-2px);
-}
-
-@media (max-width: 768px) {
-    .hero-buttons {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .btn-hero, .btn-custom {
-        width: 100%;
-        max-width: 250px;
-        text-align: center;
-    }
-}
-
-@media (max-width: 768px) {
-    .user-info {
-        justify-content: center;
-        gap: 0.5rem;
-    }
-            
-            .user-info > * {
-                margin: 0.2rem;
-            }
         }
 
         .btn-save {
@@ -1043,6 +1251,26 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
                 flex-direction: column;
                 text-align: center;
             }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-hero, .btn-custom {
+                width: 100%;
+                max-width: 250px;
+                text-align: center;
+            }
+
+            .user-info {
+                justify-content: center;
+                gap: 0.5rem;
+            }
+            
+            .user-info > * {
+                margin: 0.2rem;
+            }
         }
 
         /* Search Section Styles */
@@ -1058,21 +1286,35 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
             align-items: center;
         }
 
+        /* Enhanced Search Box */
         .search-input {
             width: 100%;
             padding: 0.8rem 3rem 0.8rem 1rem;
-            border: 2px solid #ddd;
+            background: rgba(0, 0, 0, 0.3) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 25px;
             font-size: 1rem;
             outline: none;
             transition: all 0.3s;
-            background: white;
+            color: white !important;
+            font-weight: 500;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.8) !important;
+            font-weight: 400;
+        }
+
         .search-input:focus {
-            border-color: #667eea;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+            background: rgba(0, 0, 0, 0.4) !important;
+            border-color: rgba(102, 126, 234, 0.8);
+            box-shadow: 
+                0 0 25px rgba(102, 126, 234, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            color: white !important;
         }
 
         .search-icon {
@@ -1161,6 +1403,145 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
             color: #dc3545;
             margin-left: 2px;
         }
+
+        /* NEW: Customization Options Grid */
+        .customization-options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-group {
+            margin-bottom: 1rem;
+        }
+
+        .option-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .size-options {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .size-option {
+            padding: 0.5rem 1rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .size-option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        /* Floating Animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Pulse Animation */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Gradient Text Animation */
+        .gradient-text {
+            background: linear-gradient(45deg, #667eea, #764ba2, #ffd700, #667eea);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Floating Elements */
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-element {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: floatRandom 6s ease-in-out infinite;
+        }
+
+        @keyframes floatRandom {
+            0%, 100% { 
+                transform: translate(0, 0) rotate(0deg); 
+            }
+            25% { 
+                transform: translate(10px, -15px) rotate(90deg); 
+            }
+            50% { 
+                transform: translate(-5px, -25px) rotate(180deg); 
+            }
+            75% { 
+                transform: translate(15px, -10px) rotate(270deg); 
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #764ba2, #667eea);
+        }
     </style>
 </head>
 <body>
@@ -1185,18 +1566,27 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 
     <!-- Hero Section -->
     <section class="hero" id="home">
-        <h1>Premium Graphic Design Services</h1>
-        <p>Transform your ideas into stunning visual designs with our professional graphic design services. From logos to complete brand identities, we bring creativity to life.</p>
-        <a href="#designs" class="btn btn-hero">Explore Designs</a>
-        <a href="https://wa.me/9843765564?text=Hi%20Fine%20Graphics!%20I%20want%20to%20create%20my%20own%20custom%20design.%20Please%20guide%20me%20through%20the%20process." 
-   class="btn-custom" target="_blank">
-   🎨 Get Your Own Design
-</a>
+        <div class="floating-elements">
+            <div class="floating-element" style="width: 100px; height: 100px; top: 10%; left: 10%;"></div>
+            <div class="floating-element" style="width: 150px; height: 150px; top: 60%; right: 10%;"></div>
+            <div class="floating-element" style="width: 80px; height: 80px; bottom: 20%; left: 20%;"></div>
+        </div>
+        <h1 class="gradient-text floating">Premium Graphic Design Services</h1>
+        <p>Transform your ideas into stunning visual designs with our professional graphic design services.</p>
+        <div class="hero-buttons">
+            <a href="#designs" class="btn btn-hero pulse">Explore Designs</a>
+            <a href="https://wa.me/9843765564?text=Hi%20Fine%20Graphics!%20I%20want%20to%20create%20my%20own%20custom%20design.%20Please%20guide%20me%20through%20the%20process." 
+               class="btn-custom pulse" target="_blank">
+               🎨 Get Your Own Design
+            </a>
+        </div>
     </section>
 
     <!-- Designs Section -->
     <section class="designs-section" id="designs">
-        <h2 class="section-title">Our Design Collection</h2>
+        <div class="section-header">
+            <h2 class="section-title floating">Our Design Collection</h2>
+        </div>
         
         <!-- Search Container -->
         <div class="search-section">
@@ -1208,7 +1598,7 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
         </div>
         
         <div id="designsContainer" class="loading">
-            Loading designs...
+            <div class="floating">Loading designs...</div>
         </div>
     </section>
 
@@ -1227,23 +1617,22 @@ if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
         let currentCustomizationDesign = null; // Store design being customized
 
         // Initialize the application
-        // Initialize the application - UPDATED to load from storage first
-async function initApp() {
-    await checkLoginStatus();
-    
-    // Load from localStorage FIRST
-    loadCartFromStorage();
-    loadWishlistFromStorage();
-    
-    // THEN sync with database (which now preserves local data)
-    await syncUserData();
-    
-    await loadDesigns();
-    updateAuthButtons();
-    updateCartBadges();
-    
-    console.log(`🎯 App initialized - Cart: ${cart.length}, Wishlist: ${wishlist.length}`);
-}
+        async function initApp() {
+            await checkLoginStatus();
+            
+            // Load from localStorage FIRST
+            loadCartFromStorage();
+            loadWishlistFromStorage();
+            
+            // THEN sync with database (which now preserves local data)
+            await syncUserData();
+            
+            await loadDesigns();
+            updateAuthButtons();
+            updateCartBadges();
+            
+            console.log(`🎯 App initialized - Cart: ${cart.length}, Wishlist: ${wishlist.length}`);
+        }
 
         // Profile Picture Variables
         let profilePicBase64 = "";
@@ -1332,53 +1721,52 @@ async function initApp() {
         }
 
         // Sync user data when page loads
-        // Fix the syncUserData function to preserve local cart when database cart is empty
-async function syncUserData() {
-    if (!currentUser) return;
+        async function syncUserData() {
+            if (!currentUser) return;
 
-    try {
-        // Get latest data from database
-        const response = await fetch(`/getUserData/${currentUser.username}`);
-        const result = await response.json();
+            try {
+                // Get latest data from database
+                const response = await fetch(`/getUserData/${currentUser.username}`);
+                const result = await response.json();
 
-        if (result.success) {
-            console.log(`🔄 Syncing data - Database Cart: ${result.cart?.length || 0}, Database Wishlist: ${result.wishlist?.length || 0}`);
-            console.log(`🔄 Local data - Local Cart: ${cart.length}, Local Wishlist: ${wishlist.length}`);
-            
-            // Only update cart if database has cart items AND local cart is empty
-            // This prevents empty database cart from overwriting local cart
-            if (result.cart && result.cart.length > 0) {
-                cart = result.cart;
-                console.log('✅ Cart updated from database');
-            } else if (cart.length === 0 && result.cart && result.cart.length === 0) {
-                // Both are empty, no action needed
-                console.log('ℹ️ Both local and database carts are empty');
-            } else if (cart.length > 0 && (!result.cart || result.cart.length === 0)) {
-                // Local has items but database is empty - SYNC LOCAL TO DATABASE
-                console.log('🔄 Local cart has items, syncing to database...');
-                await syncCartToDatabase();
+                if (result.success) {
+                    console.log(`🔄 Syncing data - Database Cart: ${result.cart?.length || 0}, Database Wishlist: ${result.wishlist?.length || 0}`);
+                    console.log(`🔄 Local data - Local Cart: ${cart.length}, Local Wishlist: ${wishlist.length}`);
+                    
+                    // Only update cart if database has cart items AND local cart is empty
+                    // This prevents empty database cart from overwriting local cart
+                    if (result.cart && result.cart.length > 0) {
+                        cart = result.cart;
+                        console.log('✅ Cart updated from database');
+                    } else if (cart.length === 0 && result.cart && result.cart.length === 0) {
+                        // Both are empty, no action needed
+                        console.log('ℹ️ Both local and database carts are empty');
+                    } else if (cart.length > 0 && (!result.cart || result.cart.length === 0)) {
+                        // Local has items but database is empty - SYNC LOCAL TO DATABASE
+                        console.log('🔄 Local cart has items, syncing to database...');
+                        await syncCartToDatabase();
+                    }
+                    
+                    // Same logic for wishlist
+                    if (result.wishlist && result.wishlist.length > 0) {
+                        wishlist = result.wishlist;
+                        console.log('✅ Wishlist updated from database');
+                    } else if (wishlist.length === 0 && result.wishlist && result.wishlist.length === 0) {
+                        console.log('ℹ️ Both local and database wishlists are empty');
+                    } else if (wishlist.length > 0 && (!result.wishlist || result.wishlist.length === 0)) {
+                        console.log('🔄 Local wishlist has items, syncing to database...');
+                        await syncWishlistToDatabase();
+                    }
+
+                    saveCartToStorage();
+                    saveWishlistToStorage();
+                    updateCartBadges();
+                    console.log(`✅ Sync complete - Cart: ${cart.length}, Wishlist: ${wishlist.length}`);
+                }
+            } catch (error) {
+                console.error('Error syncing user data:', error);
             }
-            
-            // Same logic for wishlist
-            if (result.wishlist && result.wishlist.length > 0) {
-                wishlist = result.wishlist;
-                console.log('✅ Wishlist updated from database');
-            } else if (wishlist.length === 0 && result.wishlist && result.wishlist.length === 0) {
-                console.log('ℹ️ Both local and database wishlists are empty');
-            } else if (wishlist.length > 0 && (!result.wishlist || result.wishlist.length === 0)) {
-                console.log('🔄 Local wishlist has items, syncing to database...');
-                await syncWishlistToDatabase();
-            }
-
-            saveCartToStorage();
-            saveWishlistToStorage();
-            updateCartBadges();
-            console.log(`✅ Sync complete - Cart: ${cart.length}, Wishlist: ${wishlist.length}`);
         }
-    } catch (error) {
-        console.error('Error syncing user data:', error);
-    }
-}
 
         // Load designs from database
         async function loadDesigns() {
@@ -1469,42 +1857,41 @@ async function syncUserData() {
                 const canAddToCart = isLoggedIn && hasCompleteProfile;
                 const canAddToWishlist = isLoggedIn && hasCompleteProfile;
 
-                // Update this section in renderDesigns function
-let cartButtonText, wishlistButtonText, cartButtonClass, wishlistButtonClass, cartOnClick, wishlistOnClick;
+                let cartButtonText, wishlistButtonText, cartButtonClass, wishlistButtonClass, cartOnClick, wishlistOnClick;
 
-if (!isLoggedIn) {
-    cartButtonText = '🔒 Login for Cart';
-    wishlistButtonText = '🔒 Login for Wishlist';
-    cartButtonClass = 'disabled-login';
-    wishlistButtonClass = 'disabled-login';
-    cartOnClick = 'showLoginRequired()';
-    wishlistOnClick = 'showLoginRequired()';
-} else if (!hasCompleteProfile) {
-    cartButtonText = '📝 Complete Profile';
-    wishlistButtonText = '📝 Complete Profile';
-    cartButtonClass = 'disabled-profile';
-    wishlistButtonClass = 'disabled-profile';
-    cartOnClick = 'showProfileRequired()';
-    wishlistOnClick = 'showProfileRequired()';
-} else {
-    // FIX: Different behavior for Add vs Remove
-    if (isInCart) {
-        // Item is already in cart - show remove button
-        cartButtonText = '🗑️ Remove from Cart';
-        cartButtonClass = 'added';
-        cartOnClick = `removeFromCart('${design.name}')`; // Direct remove function
-    } else {
-        // Item not in cart - show add button with customization
-        cartButtonText = '🛒 Add to Cart';
-        cartButtonClass = '';
-        cartOnClick = `openCustomizationModal('${design.name}', ${design.price}, '${imageSrc}', ${design.id})`;
-    }
-    
-    // Wishlist logic remains the same
-    wishlistButtonText = isInWishlist ? '💔 Remove from Wishlist' : '❤️ Add to Wishlist';
-    wishlistButtonClass = isInWishlist ? 'added' : '';
-    wishlistOnClick = `addToWishlist('${design.name}', ${design.price}, '${imageSrc}')`;
-}
+                if (!isLoggedIn) {
+                    cartButtonText = '🔒 Login for Cart';
+                    wishlistButtonText = '🔒 Login for Wishlist';
+                    cartButtonClass = 'disabled-login';
+                    wishlistButtonClass = 'disabled-login';
+                    cartOnClick = 'showLoginRequired()';
+                    wishlistOnClick = 'showLoginRequired()';
+                } else if (!hasCompleteProfile) {
+                    cartButtonText = '📝 Complete Profile';
+                    wishlistButtonText = '📝 Complete Profile';
+                    cartButtonClass = 'disabled-profile';
+                    wishlistButtonClass = 'disabled-profile';
+                    cartOnClick = 'showProfileRequired()';
+                    wishlistOnClick = 'showProfileRequired()';
+                } else {
+                    // FIX: Different behavior for Add vs Remove
+                    if (isInCart) {
+                        // Item is already in cart - show remove button
+                        cartButtonText = '🗑️ Remove from Cart';
+                        cartButtonClass = 'added';
+                        cartOnClick = `removeFromCart('${design.name}')`; // Direct remove function
+                    } else {
+                        // Item not in cart - show add button with customization
+                        cartButtonText = '🛒 Add to Cart';
+                        cartButtonClass = '';
+                        cartOnClick = `openCustomizationModal('${design.name}', ${design.price}, '${imageSrc}', ${design.id})`;
+                    }
+                    
+                    // Wishlist logic remains the same
+                    wishlistButtonText = isInWishlist ? '💔 Remove from Wishlist' : '❤️ Add to Wishlist';
+                    wishlistButtonClass = isInWishlist ? 'added' : '';
+                    wishlistOnClick = `addToWishlist('${design.name}', ${design.price}, '${imageSrc}')`;
+                }
 
                 // Create a safe design object for the preview function
                 const safeDesign = {
@@ -1516,44 +1903,42 @@ if (!isLoggedIn) {
                     image_type: design.image_type || ''
                 };
 
-     // In the renderDesigns function, remove the price line
-// In the renderDesigns function, update the cart button logic
-designsHTML += `
-    <div class="design-card" data-design-id="${design.id}">
-        <img src="${imageSrc}" 
-             alt="${design.name}" 
-             class="design-image" 
-             onclick="openImagePreview('${encodeURIComponent(JSON.stringify(safeDesign))}')">
-        <div class="design-info">
-            <div class="design-name">${design.name}</div>
-            <div class="design-category">${design.category || 'General'}</div>
-            <div class="design-description">${design.description || 'No description available.'}</div>
-            <div class="design-actions">
-                <button class="btn-cart ${cartButtonClass}" 
-                        onclick="${cartOnClick}"
-                        title="${!isLoggedIn ? 'Please login to add to cart' : (!hasCompleteProfile ? 'Please complete your profile first' : (isInCart ? 'Remove from cart' : 'Add to cart with customization'))}">
-                    ${cartButtonText}
-                </button>
-                <button class="btn-wishlist ${wishlistButtonClass}" 
-                        onclick="${wishlistOnClick}"
-                        title="${!isLoggedIn ? 'Please login to add to wishlist' : (!hasCompleteProfile ? 'Please complete your profile first' : (isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'))}">
-                    ${wishlistButtonText}
-                </button>
-            </div>
-            ${!isLoggedIn ? `
-                <div class="login-required-message">
-                    <p>🔐 Please login to manage your cart and wishlist</p>
-                    <a href="login.html" class="btn-login-small">Login Now</a>
-                </div>
-            ` : (!hasCompleteProfile ? `
-                <div class="profile-required-message">
-                    <p>📝 Please complete your profile with address, mobile, and district to start shopping</p>
-                    <button class="btn-profile-small" onclick="openUpdateProfileModal()">Complete Profile</button>
-                </div>
-            ` : '')}
-        </div>
-    </div>
-`;
+                designsHTML += `
+                    <div class="design-card" data-design-id="${design.id}">
+                        <img src="${imageSrc}" 
+                             alt="${design.name}" 
+                             class="design-image" 
+                             onclick="openImagePreview('${encodeURIComponent(JSON.stringify(safeDesign))}')">
+                        <div class="design-info">
+                            <div class="design-name">${design.name}</div>
+                            <div class="design-category">${design.category || 'General'}</div>
+                            <div class="design-description">${design.description || 'No description available.'}</div>
+                            <div class="design-actions">
+                                <button class="btn-cart ${cartButtonClass}" 
+                                        onclick="${cartOnClick}"
+                                        title="${!isLoggedIn ? 'Please login to add to cart' : (!hasCompleteProfile ? 'Please complete your profile first' : (isInCart ? 'Remove from cart' : 'Add to cart with customization'))}">
+                                    ${cartButtonText}
+                                </button>
+                                <button class="btn-wishlist ${wishlistButtonClass}" 
+                                        onclick="${wishlistOnClick}"
+                                        title="${!isLoggedIn ? 'Please login to add to wishlist' : (!hasCompleteProfile ? 'Please complete your profile first' : (isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'))}">
+                                    ${wishlistButtonText}
+                                </button>
+                            </div>
+                            ${!isLoggedIn ? `
+                                <div class="login-required-message">
+                                    <p>🔐 Please login to manage your cart and wishlist</p>
+                                    <a href="login.html" class="btn-login-small">Login Now</a>
+                                </div>
+                            ` : (!hasCompleteProfile ? `
+                                <div class="profile-required-message">
+                                    <p>📝 Please complete your profile with address, mobile, and district to start shopping</p>
+                                    <button class="btn-profile-small" onclick="openUpdateProfileModal()">Complete Profile</button>
+                                </div>
+                            ` : '')}
+                        </div>
+                    </div>
+                `;
             });
 
             designsHTML += '</div>';
@@ -1598,197 +1983,234 @@ designsHTML += `
             const modal = document.getElementById('customizationModal');
             modal.style.display = 'none';
             currentCustomizationDesign = null;
+            
+            // Reset form fields
+            document.querySelectorAll('input[name="gender"]').forEach(radio => {
+                radio.checked = false;
+            });
+            
+            // Reset dropdowns
+            document.getElementById('tshirtColor').value = '';
+            document.getElementById('tshirtType').value = '';
+            
+            // Reset size buttons
+            document.querySelectorAll('.size-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelector('.size-option[data-size="M"]').classList.add('selected');
+            document.getElementById('selectedSize').value = 'M';
+            
+            // Reset other fields
+            document.getElementById('designSide').value = '';
+            document.getElementById('placementPosition').value = '';
+            document.getElementById('designWidth').value = '';
+            document.getElementById('designHeight').value = '';
+            document.getElementById('customRequirements').value = '';
+        }
+
+        // Size selection
+        function selectSize(element) {
+            document.querySelectorAll('.size-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            const size = element.getAttribute('data-size');
+            document.getElementById('selectedSize').value = size;
+            updateCustomizationPreview();
+        }
+
+        // Update the customization preview function to include new options
+        function updateCustomizationPreview() {
+            const gender = document.querySelector('input[name="gender"]:checked');
+            const color = document.getElementById('tshirtColor').value;
+            const size = document.getElementById('selectedSize').value;
+            const tshirtType = document.getElementById('tshirtType').value;
+            const designSide = document.getElementById('designSide').value;
+            const placementPosition = document.getElementById('placementPosition').value;
+            const width = parseInt(document.getElementById('designWidth').value) || 0;
+            const height = parseInt(document.getElementById('designHeight').value) || 0;
+            const customRequirements = document.getElementById('customRequirements').value;
+            const calculatedPrice = width * height * 10;
+            
+            // Format display names
+            const colorDisplay = color ? color.charAt(0).toUpperCase() + color.slice(1) : 'Not selected';
+            const tshirtTypeDisplay = tshirtType ? 
+                tshirtType.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 
+                'Not selected';
+            
+            // Update preview text
+            document.getElementById('previewGender').textContent = `Gender: ${gender ? gender.value : 'Not selected'}`;
+            document.getElementById('previewColor').textContent = `Color: ${colorDisplay}`;
+            document.getElementById('previewSize').textContent = `Size: ${size}`;
+            document.getElementById('previewTshirtType').textContent = `T-Shirt Type: ${tshirtTypeDisplay}`;
+            document.getElementById('previewSide').textContent = `Side: ${designSide || 'Not selected'}`;
+            document.getElementById('previewPosition').textContent = `Position: ${placementPosition || 'Not selected'}`;
+            document.getElementById('previewDesignSize').textContent = `Design Size: ${width && height ? `${width}cm × ${height}cm` : 'Not specified'}`;
+            document.getElementById('previewRequirements').textContent = `Requirements: ${customRequirements || 'None'}`;
+            
+            // Update price
+            const priceElement = document.getElementById('previewPrice');
+            if (width > 0 && height > 0) {
+                priceElement.textContent = `Calculated Price: ₹${calculatedPrice}`;
+                priceElement.style.color = '#28a745';
+            } else {
+                priceElement.textContent = 'Price: Enter dimensions to calculate';
+                priceElement.style.color = '#dc3545';
+            }
         }
 
         function handleCustomizationSubmit(event) {
-    event.preventDefault();
-    
-    if (!currentCustomizationDesign) {
-        showNotification('No design selected for customization', 'remove');
-        return;
-    }
+            event.preventDefault();
+            
+            if (!currentCustomizationDesign) {
+                showNotification('No design selected for customization', 'remove');
+                return;
+            }
 
-    // Get form values
-    const designSide = document.getElementById('designSide').value;
-    const placementPosition = document.getElementById('placementPosition').value;
-    const designWidth = parseInt(document.getElementById('designWidth').value) || 0;
-    const designHeight = parseInt(document.getElementById('designHeight').value) || 0;
-    const customRequirements = document.getElementById('customRequirements').value.trim();
+            // Get all form values including new dropdowns
+            const gender = document.querySelector('input[name="gender"]:checked');
+            const tshirtColor = document.getElementById('tshirtColor').value;
+            const tshirtSize = document.getElementById('selectedSize').value;
+            const tshirtType = document.getElementById('tshirtType').value;
+            const designSide = document.getElementById('designSide').value;
+            const placementPosition = document.getElementById('placementPosition').value;
+            const designWidth = parseInt(document.getElementById('designWidth').value) || 0;
+            const designHeight = parseInt(document.getElementById('designHeight').value) || 0;
+            const customRequirements = document.getElementById('customRequirements').value.trim();
 
-    // Validation
-    if (!designSide) {
-        showNotification('Please select design side', 'remove');
-        return;
-    }
+            // Validation for all required fields
+            if (!gender) {
+                showNotification('Please select gender', 'remove');
+                return;
+            }
 
-    if (!placementPosition) {
-        showNotification('Please select placement position', 'remove');
-        return;
-    }
+            if (!tshirtColor) {
+                showNotification('Please select t-shirt color', 'remove');
+                return;
+            }
 
-    if (designWidth <= 0 || designHeight <= 0) {
-        showNotification('Please enter valid dimensions (greater than 0)', 'remove');
-        return;
-    }
+            if (!tshirtSize) {
+                showNotification('Please select size', 'remove');
+                return;
+            }
 
-    // Calculate price
-    const calculatedPrice = designWidth * designHeight * 10;
-    
-    // Show price confirmation
-    if (!confirm(`Price for ${designWidth}cm × ${designHeight}cm design: ₹${calculatedPrice}\n\nClick OK to add to cart.`)) {
-        return;
-    }
+            if (!tshirtType) {
+                showNotification('Please select t-shirt type', 'remove');
+                return;
+            }
 
-    // Add to cart with customization and calculated price
-    addToCartWithCustomization(
-        currentCustomizationDesign.name,
-        calculatedPrice, // Pass calculated price instead of design price
-        currentCustomizationDesign.image,
-        designSide,
-        placementPosition,
-        designWidth,
-        designHeight,
-        customRequirements
-    );
+            // Existing validation
+            if (!designSide) {
+                showNotification('Please select design side', 'remove');
+                return;
+            }
 
-    // Close modal
-    closeCustomizationModal();
-}
+            if (!placementPosition) {
+                showNotification('Please select placement position', 'remove');
+                return;
+            }
+
+            if (designWidth <= 0 || designHeight <= 0) {
+                showNotification('Please enter valid dimensions (greater than 0)', 'remove');
+                return;
+            }
+
+            // Calculate price
+            const calculatedPrice = designWidth * designHeight * 10;
+            
+            // Show price confirmation
+            if (!confirm(`Price for ${designWidth}cm × ${designHeight}cm design: ₹${calculatedPrice}\n\nClick OK to add to cart.`)) {
+                return;
+            }
+
+            // Add to cart with all customization data
+            addToCartWithCustomization(
+                currentCustomizationDesign.name,
+                calculatedPrice,
+                currentCustomizationDesign.image,
+                designSide,
+                placementPosition,
+                designWidth,
+                designHeight,
+                customRequirements,
+                gender.value,
+                tshirtColor,
+                tshirtSize,
+                tshirtType
+            );
+
+            // Close modal
+            closeCustomizationModal();
+        }
 
         // Add to cart with customization data
-        // Fix the addToCartWithCustomization function
-// Add to cart with customization - FIXED VERSION
-// Add to cart with customization - UPDATED WITH PRICE CALCULATION
-function addToCartWithCustomization(designName, basePrice, image, designSide, placementPosition, designWidth, designHeight, customRequirements) {
-    if (!currentUser) {
-        showLoginRequired();
-        return;
-    }
-    
-    if (!isProfileComplete()) {
-        showProfileRequired();
-        return;
-    }
-
-    // Calculate price based on dimensions: width × height × 10
-    const calculatedPrice = designWidth * designHeight * 10;
-    
-    console.log('🎯 Adding to cart with calculated price:', {
-        designName, 
-        basePrice, // This is the original price from design (if any, but we'll ignore it)
-        calculatedPrice, // This is the actual price we'll use
-        designWidth, 
-        designHeight, 
-        designSide, 
-        placementPosition, 
-        customRequirements
-    });
-
-    const existingItemIndex = cart.findIndex(item => item.name === designName);
-    
-    if (existingItemIndex !== -1) {
-        // Item already in cart - REMOVE it
-        cart.splice(existingItemIndex, 1);
-        showNotification(`🗑️ ${designName} removed from cart!`, 'remove');
-    } else {
-        // Item not in cart - ADD it with customization and calculated price
-        const cartItem = {
-            name: designName,
-            price: calculatedPrice, // Use calculated price instead of base price
-            quantity: 1,
-            image: image,
-            placement_position: placementPosition,
-            design_side: designSide,
-            design_width: parseInt(designWidth),
-            design_height: parseInt(designHeight),
-            custom_requirements: customRequirements,
-            calculated_price: calculatedPrice // Store for reference
-        };
-        
-        console.log('🛒 Cart item being added:', cartItem);
-        cart.push(cartItem);
-        showNotification(`✅ ${designName} added to cart! Price: ₹${calculatedPrice}`, 'success');
-    }
-
-    // Save and sync
-    saveCartToStorage();
-    updateCartBadges();
-    renderDesigns(designs);
-    
-    // Force sync to database
-    syncCartToDatabase().then(() => {
-        console.log('🔄 Cart sync completed');
-        verifyCartSaved();
-    });
-}
-
-// Verify cart was saved to database
-async function verifyCartSaved() {
-    if (!currentUser) return;
-    
-    try {
-        const response = await fetch(`/getUserData/${currentUser.username}`);
-        const result = await response.json();
-        
-        if (result.success) {
-            console.log('✅ Cart verification - Database cart:', result.cart);
-            console.log('✅ Cart verification - Local cart:', cart);
-        }
-    } catch (error) {
-        console.error('❌ Cart verification failed:', error);
-    }
-}
-
-// Fix the syncCartToDatabase function
-async function syncCartToDatabase() {
-    if (!currentUser) {
-        console.log('❌ No user logged in, cannot sync cart');
-        return;
-    }
-
-    try {
-        console.log('🔄 Syncing cart to database:', cart);
-        
-        const response = await fetch('/syncUserData', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: currentUser.username,
-                cart: cart,
-                wishlist: null // Skip wishlist sync
-            })
-        });
-        
-        const result = await response.json();
-        console.log("✅ Cart sync response:", result);
-        return result;
-    } catch (error) {
-        console.error('❌ Error syncing cart to database:', error);
-        throw error;
-    }
-}
-// Add this new function for direct cart removal
-function removeFromCart(designName) {
-    if (!currentUser) {
-        showLoginRequired();
-        return;
-    }
-    
-    if (!isProfileComplete()) {
-        showProfileRequired();
-        return;
-    }
-
-    // Find the item in cart
-    const existingItemIndex = cart.findIndex(item => item.name === designName);
-    
-    if (existingItemIndex !== -1) {
-        // Ask for confirmation before removing
-        if (confirm(`Are you sure you want to remove "${designName}" from your cart?`)) {
-            // Remove from cart
-            cart.splice(existingItemIndex, 1);
-            showNotification(`🗑️ ${designName} removed from cart!`, 'remove');
+        function addToCartWithCustomization(designName, basePrice, image, designSide, placementPosition, designWidth, designHeight, customRequirements, gender, tshirtColor, tshirtSize, tshirtType) {
+            if (!currentUser) {
+                showLoginRequired();
+                return;
+            }
             
+            if (!isProfileComplete()) {
+                showProfileRequired();
+                return;
+            }
+
+            // Calculate price based on dimensions: width × height × 10
+            const calculatedPrice = designWidth * designHeight * 10;
+            
+            console.log('🎯 Adding to cart with customization:', {
+                designName, 
+                calculatedPrice,
+                designWidth, 
+                designHeight, 
+                designSide, 
+                placementPosition,
+                gender,
+                tshirtColor,
+                tshirtSize,
+                tshirtType,
+                customRequirements
+            });
+
+            const existingItemIndex = cart.findIndex(item => 
+                item.name === designName && 
+                item.design_side === designSide &&
+                item.design_width === designWidth &&
+                item.design_height === designHeight &&
+                item.gender === gender &&
+                item.tshirt_color === tshirtColor &&
+                item.tshirt_size === tshirtSize &&
+                item.tshirt_type === tshirtType
+            );
+            
+            if (existingItemIndex !== -1) {
+                // Item already in cart - REMOVE it
+                cart.splice(existingItemIndex, 1);
+                showNotification(`🗑️ ${designName} removed from cart!`, 'remove');
+            } else {
+                // Item not in cart - ADD it with customization and calculated price
+                const cartItem = {
+                    name: designName,
+                    price: calculatedPrice,
+                    quantity: 1,
+                    image: image,
+                    placement_position: placementPosition,
+                    design_side: designSide,
+                    design_width: parseInt(designWidth),
+                    design_height: parseInt(designHeight),
+                    custom_requirements: customRequirements,
+                    gender: gender,
+                    tshirt_color: tshirtColor,
+                    tshirt_size: tshirtSize,
+                    tshirt_type: tshirtType,
+                    calculated_price: calculatedPrice
+                };
+                
+                console.log('🛒 Cart item being added:', cartItem);
+                cart.push(cartItem);
+                showNotification(`✅ ${designName} added to cart! Price: ₹${calculatedPrice}`, 'success');
+            }
+
             // Save and sync
             saveCartToStorage();
             updateCartBadges();
@@ -1796,13 +2218,94 @@ function removeFromCart(designName) {
             
             // Force sync to database
             syncCartToDatabase().then(() => {
-                console.log('🔄 Cart sync completed after removal');
+                console.log('🔄 Cart sync completed');
+                verifyCartSaved();
             });
         }
-    } else {
-        showNotification('Item not found in cart', 'remove');
-    }
-}
+
+        // Verify cart was saved to database
+        async function verifyCartSaved() {
+            if (!currentUser) return;
+            
+            try {
+                const response = await fetch(`/getUserData/${currentUser.username}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('✅ Cart verification - Database cart:', result.cart);
+                    console.log('✅ Cart verification - Local cart:', cart);
+                }
+            } catch (error) {
+                console.error('❌ Cart verification failed:', error);
+            }
+        }
+
+        // Fix the syncCartToDatabase function
+        async function syncCartToDatabase() {
+            if (!currentUser) {
+                console.log('❌ No user logged in, cannot sync cart');
+                return;
+            }
+
+            try {
+                console.log('🔄 Syncing cart to database:', cart);
+                
+                const response = await fetch('/syncUserData', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        cart: cart,
+                        wishlist: null // Skip wishlist sync
+                    })
+                });
+                
+                const result = await response.json();
+                console.log("✅ Cart sync response:", result);
+                return result;
+            } catch (error) {
+                console.error('❌ Error syncing cart to database:', error);
+                throw error;
+            }
+        }
+
+        // Add this new function for direct cart removal
+        function removeFromCart(designName) {
+            if (!currentUser) {
+                showLoginRequired();
+                return;
+            }
+            
+            if (!isProfileComplete()) {
+                showProfileRequired();
+                return;
+            }
+
+            // Find the item in cart
+            const existingItemIndex = cart.findIndex(item => item.name === designName);
+            
+            if (existingItemIndex !== -1) {
+                // Ask for confirmation before removing
+                if (confirm(`Are you sure you want to remove "${designName}" from your cart?`)) {
+                    // Remove from cart
+                    cart.splice(existingItemIndex, 1);
+                    showNotification(`🗑️ ${designName} removed from cart!`, 'remove');
+                    
+                    // Save and sync
+                    saveCartToStorage();
+                    updateCartBadges();
+                    renderDesigns(designs);
+                    
+                    // Force sync to database
+                    syncCartToDatabase().then(() => {
+                        console.log('🔄 Cart sync completed after removal');
+                    });
+                }
+            } else {
+                showNotification('Item not found in cart', 'remove');
+            }
+        }
+
         // Cart functionality - UPDATED with profile completion check
         function addToCart(designName, price, image) {
             if (!currentUser) {
@@ -1984,45 +2487,70 @@ function removeFromCart(designName) {
         }
 
         function loadCartFromStorage() {
-    if (currentUser) {
-        const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
-        if (savedCart) {
-            try {
-                cart = JSON.parse(savedCart);
-                console.log(`📦 Loaded ${cart.length} cart items from localStorage`);
-            } catch (e) {
-                console.error('Error parsing cart from localStorage:', e);
+            if (currentUser) {
+                const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
+                if (savedCart) {
+                    try {
+                        cart = JSON.parse(savedCart);
+                        console.log(`📦 Loaded ${cart.length} cart items from localStorage`);
+                    } catch (e) {
+                        console.error('Error parsing cart from localStorage:', e);
+                        cart = [];
+                    }
+                } else {
+                    console.log('📦 No cart found in localStorage');
+                    cart = [];
+                }
+            } else {
                 cart = [];
             }
-        } else {
-            console.log('📦 No cart found in localStorage');
-            cart = [];
         }
-    } else {
-        cart = [];
-    }
-}
 
-function loadWishlistFromStorage() {
-    if (currentUser) {
-        const savedWishlist = localStorage.getItem(`wishlist_${currentUser.username}`);
-        if (savedWishlist) {
-            try {
-                wishlist = JSON.parse(savedWishlist);
-                console.log(`❤️ Loaded ${wishlist.length} wishlist items from localStorage`);
-            } catch (e) {
-                console.error('Error parsing wishlist from localStorage:', e);
+        function loadWishlistFromStorage() {
+            if (currentUser) {
+                const savedWishlist = localStorage.getItem(`wishlist_${currentUser.username}`);
+                if (savedWishlist) {
+                    try {
+                        wishlist = JSON.parse(savedWishlist);
+                        console.log(`❤️ Loaded ${wishlist.length} wishlist items from localStorage`);
+                    } catch (e) {
+                        console.error('Error parsing wishlist from localStorage:', e);
+                        wishlist = [];
+                    }
+                } else {
+                    console.log('❤️ No wishlist found in localStorage');
+                    wishlist = [];
+                }
+            } else {
                 wishlist = [];
             }
-        } else {
-            console.log('❤️ No wishlist found in localStorage');
-            wishlist = [];
         }
-    } else {
-        wishlist = [];
-    }
+// Toggle profile dropdown menu
+function toggleProfileMenu(event) {
+    event.stopPropagation(); // Prevent immediate closing
+    const dropdownMenu = document.getElementById('profileDropdownMenu');
+    dropdownMenu.classList.toggle('show');
 }
 
+// Close profile dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const dropdownMenu = document.getElementById('profileDropdownMenu');
+    const profileToggle = document.querySelector('.profile-menu-toggle');
+    
+    if (dropdownMenu && profileToggle && 
+        !dropdownMenu.contains(event.target) && 
+        !profileToggle.contains(event.target)) {
+        dropdownMenu.classList.remove('show');
+    }
+});
+
+// Prevent dropdown from closing when clicking inside it
+document.addEventListener('click', function(event) {
+    const dropdownMenu = document.getElementById('profileDropdownMenu');
+    if (dropdownMenu && dropdownMenu.contains(event.target)) {
+        event.stopPropagation();
+    }
+});
         function saveWishlistToStorage() {
             if (currentUser) {
                 localStorage.setItem(`wishlist_${currentUser.username}`, JSON.stringify(wishlist));
@@ -2300,7 +2828,9 @@ function loadWishlistFromStorage() {
             renderDesigns(designs);
         }
 
-        // Image Preview Functions - FIXED VERSION
+        // Image Preview Functions
+        let currentPreviewDesign = null;
+
         function openImagePreview(encodedDesign) {
             const design = JSON.parse(decodeURIComponent(encodedDesign));
             currentPreviewDesign = design; // Store globally for access in other functions
@@ -2318,7 +2848,7 @@ function loadWishlistFromStorage() {
             modal.style.display = 'flex';
         }
 
-        // Load preview images for customer view - FIXED VERSION
+        // Load preview images for customer view
         async function loadDesignPreviewsForCustomer(designId) {
             try {
                 const response = await fetch(`/admin/designs/${designId}/previews`);
@@ -2368,130 +2898,12 @@ function loadWishlistFromStorage() {
                 document.getElementById('previewImage').src = mainImageSrc;
             }
         }
-// Global variable for current preview design
-let currentPreviewDesign = null;
 
-// Image Preview Functions
-function openImagePreview(encodedDesign) {
-    const design = JSON.parse(decodeURIComponent(encodedDesign));
-    currentPreviewDesign = design; // Store globally for access in other functions
-    
-    const modal = document.getElementById('imagePreviewModal');
-    
-    // Set basic design info
-    document.getElementById('previewDesignName').textContent = design.name;
-    document.getElementById('previewDesignPrice').textContent = `₹${design.price}`;
-    document.getElementById('previewDesignDescription').textContent = design.description || 'No description available.';
-    
-    // Load preview images for this design
-    loadDesignPreviewsForCustomer(design.id);
-    
-    modal.style.display = 'flex';
-}
-
-// Load preview images for customer view
-async function loadDesignPreviewsForCustomer(designId) {
-    try {
-        const response = await fetch(`/admin/designs/${designId}/previews`);
-        const result = await response.json();
-        
-        const previewContainer = document.getElementById('previewThumbnails');
-        const mainImageElem = document.getElementById('previewImage');
-        
-        // Get main image from currentPreviewDesign
-        const mainImageSrc = currentPreviewDesign.image_data ? 
-            `data:${currentPreviewDesign.image_type};base64,${currentPreviewDesign.image_data}` : 
-            'https://via.placeholder.com/600x400?text=No+Image';
-        
-        // Set main image
-        mainImageElem.src = mainImageSrc;
-        mainImageElem.alt = currentPreviewDesign.name;
-        
-        // Clear existing thumbnails
-        previewContainer.innerHTML = '';
-        
-        // Add main image as first thumbnail
-        const mainThumb = document.createElement('div');
-        mainThumb.className = 'preview-thumbnail active';
-        mainThumb.innerHTML = `<img src="${mainImageSrc}" alt="Main Image" onclick="switchPreviewImage('${mainImageSrc}', this)">`;
-        previewContainer.appendChild(mainThumb);
-        
-        // Add preview images as thumbnails
-        if (result.success && result.previews.length > 0) {
-            result.previews.forEach(preview => {
-                const imageSrc = `data:${preview.preview_type};base64,${preview.preview_data}`;
-                const thumb = document.createElement('div');
-                thumb.className = 'preview-thumbnail';
-                thumb.innerHTML = `<img src="${imageSrc}" alt="Preview" onclick="switchPreviewImage('${imageSrc}', this)">`;
-                previewContainer.appendChild(thumb);
-            });
-        }
-        
-        // Show/hide navigation based on number of images
-        updatePreviewNavigation(previewContainer.children.length);
-        
-    } catch (error) {
-        console.error('Error loading preview images:', error);
-        // Fallback to just the main image
-        const mainImageSrc = currentPreviewDesign.image_data ? 
-            `data:${currentPreviewDesign.image_type};base64,${currentPreviewDesign.image_data}` : 
-            'https://via.placeholder.com/600x400?text=No+Image';
-        document.getElementById('previewImage').src = mainImageSrc;
-    }
-}
-
-// Switch between preview images
-function switchPreviewImage(imageSrc, element) {
-    // Update main image
-    const mainImageElem = document.getElementById('previewImage');
-    mainImageElem.src = imageSrc;
-    
-    // Update active thumbnail
-    document.querySelectorAll('.preview-thumbnail').forEach(thumb => {
-        thumb.classList.remove('active');
-    });
-    element.parentElement.classList.add('active');
-}
-
-// Navigation functions for preview images
-function navigatePreview(direction) {
-    const thumbnails = document.querySelectorAll('.preview-thumbnail');
-    if (thumbnails.length <= 1) return; // No navigation needed if only one image
-    
-    const activeIndex = Array.from(thumbnails).findIndex(thumb => thumb.classList.contains('active'));
-    
-    let newIndex;
-    if (direction === 'next') {
-        newIndex = (activeIndex + 1) % thumbnails.length;
-    } else {
-        newIndex = (activeIndex - 1 + thumbnails.length) % thumbnails.length;
-    }
-    
-    // Simulate click on the new thumbnail
-    const newThumb = thumbnails[newIndex];
-    const img = newThumb.querySelector('img');
-    switchPreviewImage(img.src, img);
-}
-
-// Update preview navigation visibility
-function updatePreviewNavigation(totalImages) {
-    const previewNav = document.getElementById('previewNav');
-    if (previewNav) {
-        previewNav.style.display = totalImages > 1 ? 'flex' : 'none';
-    }
-}
-
-function closeImagePreview() {
-    const modal = document.getElementById('imagePreviewModal');
-    modal.style.display = 'none';
-    currentPreviewDesign = null; // Clear the stored design
-}
-
-// Switch between preview images - FIXED VERSION
-function switchPreviewImage(imageSrc, element) {
-    // Update main image
-    const mainImageElem = document.getElementById('previewImage');
-    mainImageElem.src = imageSrc;
+        // Switch between preview images
+        function switchPreviewImage(imageSrc, element) {
+            // Update main image
+            const mainImageElem = document.getElementById('previewImage');
+            mainImageElem.src = imageSrc;
             
             // Update active thumbnail
             document.querySelectorAll('.preview-thumbnail').forEach(thumb => {
@@ -2500,7 +2912,7 @@ function switchPreviewImage(imageSrc, element) {
             element.parentElement.classList.add('active');
         }
 
-        // Navigation functions for preview images - FIXED VERSION
+        // Navigation functions for preview images
         function navigatePreview(direction) {
             const thumbnails = document.querySelectorAll('.preview-thumbnail');
             if (thumbnails.length <= 1) return; // No navigation needed if only one image
@@ -2534,8 +2946,60 @@ function switchPreviewImage(imageSrc, element) {
             currentPreviewDesign = null; // Clear the stored design
         }
 
+        // Fix search input text color
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            
+            // Force white text color
+            searchInput.style.color = 'white';
+            searchInput.style.setProperty('color', 'white', 'important');
+            
+            // Update color on input
+            searchInput.addEventListener('input', function() {
+                this.style.color = 'white';
+                this.style.setProperty('color', 'white', 'important');
+            });
+            
+            // Update color on focus
+            searchInput.addEventListener('focus', function() {
+                this.style.color = 'white';
+                this.style.setProperty('color', 'white', 'important');
+            });
+        });
+
         // Initialize the app when page loads
-        document.addEventListener('DOMContentLoaded', initApp);
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+            
+            // Add event listeners for customization modal
+            // Gender radio buttons
+            document.querySelectorAll('input[name="gender"]').forEach(radio => {
+                radio.addEventListener('change', updateCustomizationPreview);
+            });
+            
+            // New dropdowns
+            const tshirtColor = document.getElementById('tshirtColor');
+            const tshirtType = document.getElementById('tshirtType');
+            
+            tshirtColor.addEventListener('change', updateCustomizationPreview);
+            tshirtType.addEventListener('change', updateCustomizationPreview);
+            
+            // Existing event listeners
+            const designSide = document.getElementById('designSide');
+            const placementPosition = document.getElementById('placementPosition');
+            const designWidth = document.getElementById('designWidth');
+            const designHeight = document.getElementById('designHeight');
+            const customRequirements = document.getElementById('customRequirements');
+            
+            designSide.addEventListener('change', updateCustomizationPreview);
+            placementPosition.addEventListener('change', updateCustomizationPreview);
+            designWidth.addEventListener('input', updateCustomizationPreview);
+            designHeight.addEventListener('input', updateCustomizationPreview);
+            customRequirements.addEventListener('input', updateCustomizationPreview);
+            
+            // Initial update
+            updateCustomizationPreview();
+        });
     </script>
 
     <!-- Update Profile Modal -->
@@ -2592,7 +3056,7 @@ function switchPreviewImage(imageSrc, element) {
         </div>
     </div>
 
-    <!-- Design Customization Modal -->
+    <!-- Design Customization Modal - UPDATED WITH NEW OPTIONS -->
     <div id="customizationModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -2601,6 +3065,67 @@ function switchPreviewImage(imageSrc, element) {
             </div>
             <div class="modal-body">
                 <form id="customizationForm" onsubmit="handleCustomizationSubmit(event)">
+                    <!-- New Options Grid -->
+                    <div class="customization-options-grid">
+                        <!-- Gender Selection -->
+                        <div class="option-group">
+                            <label for="gender">Gender <span class="customization-required">*</span></label>
+                            <div class="radio-group" id="genderOptions">
+                                <div class="radio-option">
+                                    <input type="radio" id="male" name="gender" value="male" required>
+                                    <label for="male">Male</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="female" name="gender" value="female" required>
+                                    <label for="female">Female</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Color Selection - DROPDOWN -->
+                        <div class="option-group">
+                            <label for="tshirtColor">T-Shirt Color <span class="customization-required">*</span></label>
+                            <select id="tshirtColor" class="form-control color-dropdown" required>
+                                <option value="">Select Color</option>
+                                <option value="black" style="color: #000000; background: #f8f9fa;">⬤ Black</option>
+                                <option value="white" style="color: #000000; background: #ffffff; border: 1px solid #ddd;">⬤ White</option>
+                                <option value="blue" style="color: #007bff; background: #f8f9fa;">⬤ Blue</option>
+                                <option value="red" style="color: #dc3545; background: #f8f9fa;">⬤ Red</option>
+                                <option value="green" style="color: #28a745; background: #f8f9fa;">⬤ Green</option>
+                                <option value="yellow" style="color: #ffc107; background: #f8f9fa;">⬤ Yellow</option>
+                                <option value="maroon" style="color: #800000; background: #f8f9fa;">⬤ Maroon</option>
+                                <option value="navy" style="color: #000080; background: #f8f9fa;">⬤ Navy</option>
+                            </select>
+                        </div>
+
+                        <!-- Size Selection -->
+                        <div class="option-group">
+                            <label for="tshirtSize">Size <span class="customization-required">*</span></label>
+                            <div class="size-options" id="sizeOptions">
+                                <div class="size-option" data-size="S" onclick="selectSize(this)">S</div>
+                                <div class="size-option" data-size="M" onclick="selectSize(this)">M</div>
+                                <div class="size-option" data-size="L" onclick="selectSize(this)">L</div>
+                                <div class="size-option" data-size="XL" onclick="selectSize(this)">XL</div>
+                                <div class="size-option" data-size="2XL" onclick="selectSize(this)">2XL</div>
+                                <div class="size-option" data-size="3XL" onclick="selectSize(this)">3XL</div>
+                            </div>
+                            <input type="hidden" id="selectedSize" name="tshirtSize" value="M" required>
+                        </div>
+
+                        <!-- T-Shirt Type Selection - DROPDOWN -->
+                        <div class="option-group">
+                            <label for="tshirtType">T-Shirt Type <span class="customization-required">*</span></label>
+                            <select id="tshirtType" class="form-control" required>
+                                <option value="">Select Type</option>
+                                <option value="round-neck">Round Neck</option>
+                                <option value="collar">Collar</option>
+                                <option value="v-neck">V-Neck</option>
+                                <option value="polo">Polo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Existing Design Customization Fields -->
                     <div class="customization-form-grid">
                         <div class="form-group">
                             <label for="designSide">Design Side <span class="customization-required">*</span></label>
@@ -2618,7 +3143,7 @@ function switchPreviewImage(imageSrc, element) {
                                 <option value="LEFT TOP">LEFT TOP</option>
                                 <option value="LEFT CENTER">LEFT CENTER</option>
                                 <option value="LEFT BOTTOM">LEFT BOTTOM</option>
-                                 <option value="CENTER TOP">CENTER TOP</option>
+                                <option value="CENTER TOP">CENTER TOP</option>
                                 <option value="CENTER">CENTER</option>
                                 <option value="CENTER BOTTOM">CENTER BOTTOM</option>
                                 <option value="RIGHT TOP">RIGHT TOP</option>
@@ -2645,10 +3170,15 @@ function switchPreviewImage(imageSrc, element) {
                     
                     <div class="customization-preview">
                         <h4>Customization Summary</h4>
+                        <p id="previewGender">Gender: Not selected</p>
+                        <p id="previewColor">Color: Not selected</p>
+                        <p id="previewSize">Size: M</p>
+                        <p id="previewTshirtType">T-Shirt Type: Not selected</p>
                         <p id="previewSide">Side: Not selected</p>
                         <p id="previewPosition">Position: Not selected</p>
-                        <p id="previewSize">Size: Not specified</p>
+                        <p id="previewDesignSize">Design Size: Not specified</p>
                         <p id="previewRequirements">Requirements: None</p>
+                        <p id="previewPrice" class="price-preview">Price: Enter dimensions to calculate</p>
                     </div>
                     
                     <div class="form-actions">
@@ -2661,88 +3191,37 @@ function switchPreviewImage(imageSrc, element) {
     </div>
 
     <!-- Image Preview Modal -->
-    <!-- Image Preview Modal -->
-<div id="imagePreviewModal" class="modal">
-    <div class="modal-content image-modal-content">
-        <div class="modal-header">
-            <h3 id="previewTitle">Design Preview</h3>
-            <button class="close-btn" onclick="closeImagePreview()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <!-- Preview Gallery -->
-            <div class="preview-gallery">
-                <img id="previewImage" src="" alt="Design Preview" class="preview-image">
-                
-                <!-- Preview Navigation -->
-                <div class="preview-nav" id="previewNav">
-                    <button onclick="navigatePreview('prev')">← Previous</button>
-                    <button onclick="navigatePreview('next')">Next →</button>
+    <div id="imagePreviewModal" class="modal">
+        <div class="modal-content image-modal-content">
+            <div class="modal-header">
+                <h3 id="previewTitle">Design Preview</h3>
+                <button class="close-btn" onclick="closeImagePreview()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Preview Gallery -->
+                <div class="preview-gallery">
+                    <img id="previewImage" src="" alt="Design Preview" class="preview-image">
+                    
+                    <!-- Preview Navigation -->
+                    <div class="preview-nav" id="previewNav">
+                        <button onclick="navigatePreview('prev')">← Previous</button>
+                        <button onclick="navigatePreview('next')">Next →</button>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Preview Thumbnails -->
-            <div class="preview-thumbnails" id="previewThumbnails">
-                <!-- Thumbnails will be added here by JavaScript -->
-            </div>
-            
-            <!-- Design Info -->
-            <div class="preview-info">
-                <h4 id="previewDesignName"></h4>
-                <p id="previewDesignPrice" class="price"></p>
-                <p id="previewDesignDescription" class="description"></p>
+                
+                <!-- Preview Thumbnails -->
+                <div class="preview-thumbnails" id="previewThumbnails">
+                    <!-- Thumbnails will be added here by JavaScript -->
+                </div>
+                
+                <!-- Design Info -->
+                <div class="preview-info">
+                    <h4 id="previewDesignName"></h4>
+                    <p id="previewDesignPrice" class="price"></p>
+                    <p id="previewDesignDescription" class="description"></p>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
-<script>
-    // Update customization preview in real-time
-    // Update customization preview in real-time with price calculation
-document.addEventListener('DOMContentLoaded', function() {
-    const designSide = document.getElementById('designSide');
-    const placementPosition = document.getElementById('placementPosition');
-    const designWidth = document.getElementById('designWidth');
-    const designHeight = document.getElementById('designHeight');
-    const customRequirements = document.getElementById('customRequirements');
-    
-    function updateCustomizationPreview() {
-        const width = parseInt(designWidth.value) || 0;
-        const height = parseInt(designHeight.value) || 0;
-        const calculatedPrice = width * height * 10;
-        
-        document.getElementById('previewSide').textContent = `Side: ${designSide.value || 'Not selected'}`;
-        document.getElementById('previewPosition').textContent = `Position: ${placementPosition.value || 'Not selected'}`;
-        document.getElementById('previewSize').textContent = `Size: ${width && height ? `${width}cm × ${height}cm` : 'Not specified'}`;
-        document.getElementById('previewRequirements').textContent = `Requirements: ${customRequirements.value || 'None'}`;
-        
-        // Update price in the preview
-        const priceElement = document.getElementById('previewPrice') || (function() {
-            const elem = document.createElement('p');
-            elem.id = 'previewPrice';
-            elem.className = 'price-preview';
-            elem.style.cssText = 'font-weight: bold; color: #28a745; font-size: 16px; margin: 8px 0;';
-            document.querySelector('.customization-preview').appendChild(elem);
-            return elem;
-        })();
-        
-        if (width > 0 && height > 0) {
-            priceElement.textContent = `Calculated Price: ₹${calculatedPrice}`;
-            priceElement.style.color = '#28a745';
-        } else {
-            priceElement.textContent = 'Price: Enter dimensions to calculate';
-            priceElement.style.color = '#dc3545';
-        }
-    }
-    
-    designSide.addEventListener('change', updateCustomizationPreview);
-    placementPosition.addEventListener('change', updateCustomizationPreview);
-    designWidth.addEventListener('input', updateCustomizationPreview);
-    designHeight.addEventListener('input', updateCustomizationPreview);
-    customRequirements.addEventListener('input', updateCustomizationPreview);
-    
-    // Initial update
-    updateCustomizationPreview();
-});
-</script>
 </body>
 </html>

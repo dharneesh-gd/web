@@ -2977,6 +2977,7 @@ async function loadRecentOrders() {
 }
 
     // Orders Management - ENHANCED WITH CUSTOMIZATION DETAILS
+// Orders Management - ENHANCED WITH ALL CUSTOMIZATION DETAILS
 async function loadOrdersData() {
   try {
     console.log("📦 Loading orders data...");
@@ -3016,7 +3017,7 @@ async function loadOrdersData() {
         return;
       }
 
-      // Build orders table with improved UI - ENHANCED WITH CUSTOMIZATION DETAILS
+      // Build orders table with improved UI - ENHANCED WITH ALL CUSTOMIZATION DETAILS
       let ordersHTML = `
         <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
           <div>
@@ -3035,6 +3036,13 @@ async function loadOrdersData() {
         const total = baseAmount + gst;
         const orderDate = order.order_date ? new Date(order.order_date).toLocaleDateString('en-IN') : 'N/A';
         const statusClass = `status-${(order.status || 'pending').toLowerCase()}`;
+        
+        // Format display values for new customization fields
+        const genderDisplay = order.gender ? order.gender.charAt(0).toUpperCase() + order.gender.slice(1) : '';
+        const colorDisplay = order.tshirt_color ? order.tshirt_color.charAt(0).toUpperCase() + order.tshirt_color.slice(1) : '';
+        const sizeDisplay = order.tshirt_size ? order.tshirt_size.toUpperCase() : '';
+        const typeDisplay = order.tshirt_type ? 
+            order.tshirt_type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : '';
         
         ordersHTML += `
           <div class="order-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #007bff;">
@@ -3065,45 +3073,78 @@ async function loadOrdersData() {
                     <div style="font-size: 14px; color: #495057; font-weight: bold;">
                       Total: ₹${total.toFixed(2)}
                     </div>
-                    <div style="font-size: 11px; color: #999; margin-top: 5px;">
+                    <div style="font-size: 15px; font-weight: bold;color: #495057; margin-top: 5px;">
                       Qty: ${order.quantity || 1}
                     </div>
                   </div>
                 </div>
                 
-                <!-- CUSTOMIZATION DETAILS - CENTERED -->
-                <div class="customization-info" style="text-align: center; margin: 15px 0;">
-                  <div style="font-size: 12px; font-weight: bold; color: #495057; margin-bottom: 8px;">
+                <!-- CUSTOMIZATION DETAILS - ENHANCED WITH NEW FIELDS -->
+                <div class="customization-info" style="margin: 15px 0;">
+                  <div style="font-size: 12px; font-weight: bold; color: #495057; margin-bottom: 8px; text-align: center;">
                     🎨 Customization Details
                   </div>
                   
-                  <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 8px;">
-                    <!-- Placement Position & Side -->
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
-                      <div style="font-size: 11px; color: #666; background: #f8f9fa; padding: 4px 8px; border-radius: 4px;">
-                        <strong>Position:</strong> ${order.placement_position || 'Not specified'}
+                  <!-- Personal Details Section -->
+                  <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 8px;">
+                    ${genderDisplay ? `
+                      <div style="font-size: 11px; color: #666; background: #e8f5e8; padding: 4px 8px; border-radius: 4px; border-left: 3px solid #28a745;">
+                        <strong>👤 Gender:</strong> ${genderDisplay}
                       </div>
-                      <div style="font-size: 11px; color: #666; background: #f8f9fa; padding: 4px 8px; border-radius: 4px;">
-                        <strong>Side:</strong> ${order.design_side ? order.design_side.toUpperCase() : 'FRONT'}
+                    ` : ''}
+                    
+                    ${colorDisplay ? `
+                      <div style="font-size: 11px; color: #666; background: #fff3cd; padding: 4px 8px; border-radius: 4px; border-left: 3px solid #ffc107;">
+                        <strong>🎨 Color:</strong> ${colorDisplay}
                       </div>
-                    </div>
+                    ` : ''}
+                    
+                    ${sizeDisplay ? `
+                      <div style="font-size: 11px; color: #666; background: #d1ecf1; padding: 4px 8px; border-radius: 4px; border-left: 3px solid #17a2b8;">
+                        <strong>📏 Size:</strong> ${sizeDisplay}
+                      </div>
+                    ` : ''}
+                    
+                    ${typeDisplay ? `
+                      <div style="font-size: 11px; color: #666; background: #e2e3e5; padding: 4px 8px; border-radius: 4px; border-left: 3px solid #6c757d;">
+                        <strong>👕 Type:</strong> ${typeDisplay}
+                      </div>
+                    ` : ''}
                   </div>
                   
-                  <!-- Size -->
-                  ${(order.design_width > 0 && order.design_height > 0) ? `
-                    <div style="font-size: 11px; color: #666; background: #f8f9fa; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-bottom: 8px;">
-                      <strong>Size:</strong> ${order.design_width}cm × ${order.design_height}cm
-                    </div>
-                  ` : ''}
+                  <!-- Design Customization Section -->
+                  <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 8px;">
+                    ${order.placement_position ? `
+                      <div style="font-size: 11px; color: #666; background: #f0f8ff; padding: 4px 8px; border-radius: 4px; border-left: 3px solid #007bff;">
+                        <strong>📍 Position:</strong> ${order.placement_position}
+                      </div>
+                    ` : ''}
+                    
+                    ${order.design_side ? `
+                      <div style="font-size: 11px; color: #666; background: #f0f8ff; padding: 4px 8px; border-radius: 4px; border-left: 3px solid #007bff;">
+                        <strong>🔄 Side:</strong> ${order.design_side.toUpperCase()}
+                      </div>
+                    ` : ''}
+                    
+                    ${(order.design_width > 0 && order.design_height > 0) ? `
+                      <div style="font-size: 11px; color: #666; background: #f0f8ff; padding: 4px 8px; border-radius: 4px; border-left: 3px solid #007bff;">
+                        <strong>📐 Size:</strong> ${order.design_width}cm × ${order.design_height}cm
+                      </div>
+                    ` : ''}
+                  </div>
                   
                   <!-- Custom Requirements -->
                   ${order.custom_requirements ? `
-                    <div style="font-size: 11px; color: #666; background: #f8f9fa; padding: 8px 12px; border-radius: 6px; margin-top: 8px;">
-                      <strong>Requirements:</strong> ${order.custom_requirements}
+                    <div style="text-align: center;">
+                      <div style="font-size: 11px; color: #666; background: #fff3cd; padding: 8px 12px; border-radius: 6px; margin-top: 8px; display: inline-block;">
+                        <strong>📝 Requirements:</strong> ${order.custom_requirements}
+                      </div>
                     </div>
                   ` : `
-                    <div style="font-size: 11px; color: #999; font-style: italic; margin-top: 8px;">
-                      No special requirements
+                    <div style="text-align: center;">
+                      <div style="font-size: 11px; color: #999; font-style: italic; margin-top: 8px;">
+                        No special requirements
+                      </div>
                     </div>
                   `}
                 </div>
@@ -3169,7 +3210,6 @@ async function loadOrdersData() {
     `;
   }
 }
-
     // Update orders summary cards
    // Update orders summary cards
 function updateOrdersSummary(orders) {
@@ -3540,6 +3580,7 @@ async function viewCustomerDetails(username) {
     // Enhanced Customer Orders View with Customization
 // Enhanced Customer Orders View with Customization
 // Enhanced Customer Orders View with Customization
+// Enhanced Customer Orders View with All Customization Fields
 async function viewCustomerOrders(username) {
     try {
         console.log("📦 Loading customer orders for:", username);
@@ -3595,6 +3636,13 @@ async function viewCustomerOrders(username) {
                         const baseAmount = item.price * item.quantity;
                         const gst = baseAmount * 0.18;
                         
+                        // Format display values for new customization fields
+                        const genderDisplay = item.gender ? item.gender.charAt(0).toUpperCase() + item.gender.slice(1) : '';
+                        const colorDisplay = item.tshirt_color ? item.tshirt_color.charAt(0).toUpperCase() + item.tshirt_color.slice(1) : '';
+                        const sizeDisplay = item.tshirt_size ? item.tshirt_size.toUpperCase() : '';
+                        const typeDisplay = item.tshirt_type ? 
+                            item.tshirt_type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : '';
+                        
                         ordersHTML += `
                             <div class="order-item" style="display: flex; align-items: flex-start; padding: 15px; border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 10px; background: #f8f9fa;">
                                 <img src="${item.image || 'https://via.placeholder.com/80'}" 
@@ -3615,36 +3663,62 @@ async function viewCustomerOrders(username) {
                                         </div>
                                     </div>
                                     
-                                    <!-- CUSTOMIZATION DETAILS -->
+                                    <!-- ENHANCED CUSTOMIZATION DETAILS -->
                                     <div class="customization-info" style="margin-top: 10px;">
                                         <div style="font-size: 12px; font-weight: bold; color: #495057; margin-bottom: 6px;">
                                             🎨 Customization Details
                                         </div>
                                         
-                                        <!-- Placement Position & Side -->
-                                        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 4px;">
-                                            <div style="font-size: 11px; color: #666;">
-                                                <strong>Position:</strong> ${item.placement_position || 'Not specified'}
-                                            </div>
-                                            <div style="font-size: 11px; color: #666;">
-                                                <strong>Side:</strong> ${item.design_side ? item.design_side.toUpperCase() : 'FRONT'}
-                                            </div>
+                                        <!-- Personal Details -->
+                                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px;">
+                                            ${genderDisplay ? `
+                                                <div style="font-size: 11px; color: #666; background: #e8f5e8; padding: 3px 6px; border-radius: 3px;">
+                                                    👤 ${genderDisplay}
+                                                </div>
+                                            ` : ''}
+                                            ${colorDisplay ? `
+                                                <div style="font-size: 11px; color: #666; background: #fff3cd; padding: 3px 6px; border-radius: 3px;">
+                                                    🎨 ${colorDisplay}
+                                                </div>
+                                            ` : ''}
+                                            ${sizeDisplay ? `
+                                                <div style="font-size: 11px; color: #666; background: #d1ecf1; padding: 3px 6px; border-radius: 3px;">
+                                                    📏 ${sizeDisplay}
+                                                </div>
+                                            ` : ''}
+                                            ${typeDisplay ? `
+                                                <div style="font-size: 11px; color: #666; background: #e2e3e5; padding: 3px 6px; border-radius: 3px;">
+                                                    👕 ${typeDisplay}
+                                                </div>
+                                            ` : ''}
                                         </div>
                                         
-                                        <!-- Size -->
-                                        ${(item.design_width > 0 && item.design_height > 0) ? `
-                                            <div style="font-size: 11px; color: #666; margin-bottom: 4px;">
-                                                <strong>Size:</strong> ${item.design_width}cm × ${item.design_height}cm
-                                            </div>
-                                        ` : ''}
+                                        <!-- Design Customization -->
+                                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px;">
+                                            ${item.placement_position ? `
+                                                <div style="font-size: 11px; color: #666; background: #f0f8ff; padding: 3px 6px; border-radius: 3px;">
+                                                    📍 ${item.placement_position}
+                                                </div>
+                                            ` : ''}
+                                            ${item.design_side ? `
+                                                <div style="font-size: 11px; color: #666; background: #f0f8ff; padding: 3px 6px; border-radius: 3px;">
+                                                    🔄 ${item.design_side.toUpperCase()}
+                                                </div>
+                                            ` : ''}
+                                            ${(item.design_width > 0 && item.design_height > 0) ? `
+                                                <div style="font-size: 11px; color: #666; background: #f0f8ff; padding: 3px 6px; border-radius: 3px;">
+                                                    📐 ${item.design_width}cm × ${item.design_height}cm
+                                                </div>
+                                            ` : ''}
+                                        </div>
                                         
                                         <!-- Custom Requirements -->
                                         ${item.custom_requirements ? `
-                                            <div style="font-size: 11px; color: #666;">
-                                                <strong>Requirements:</strong> ${item.custom_requirements}
+                                            <div style="font-size: 11px; color: #666; margin-top: 4px;">
+                                                <strong>📝 Requirements:</strong> ${item.custom_requirements}
                                             </div>
                                         ` : `
-                                            <div style="font-size: 11px; color: #999; font-style: italic;">
+                                            <div style="font-size: 11px; color: #999; font-style: italic; margin-top: 4px;">
                                                 No special requirements
                                             </div>
                                         `}
@@ -3690,9 +3764,7 @@ async function viewCustomerOrders(username) {
         `;
         openModal('customerOrdersModal');
     }
-}
-// In your loadAnalyticsData() function, replace the current content with this:
-// Migrate Designs Pricing
+}// Migrate Designs Pricing
 async function migrateDesignsPricing() {
     if (confirm('This will migrate all existing designs to use dimension-based pricing. Continue?')) {
         try {
