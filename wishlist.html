@@ -546,6 +546,91 @@
             margin-left: 2px;
         }
 
+        /* NEW: Customization Options Grid */
+        .customization-options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-group {
+            margin-bottom: 1rem;
+        }
+
+        .option-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .size-options {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .size-option {
+            padding: 0.5rem 1rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .size-option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        /* Enhanced Color Dropdown Styles */
+        .color-dropdown option {
+            padding: 10px 15px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .color-dropdown {
+            font-size: 14px;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .color-dropdown:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.2);
+        }
+
+        /* Style the dropdown arrow */
+        .color-dropdown {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .nav-container {
@@ -570,6 +655,10 @@
                 grid-template-columns: 1fr;
             }
 
+            .customization-options-grid {
+                grid-template-columns: 1fr;
+            }
+
             .form-actions {
                 flex-direction: column;
             }
@@ -578,6 +667,53 @@
                 width: 100%;
             }
         }
+
+        /* ========== MOBILE RESPONSIVE STYLES ========== */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-container { flex-wrap: wrap; padding: 0 15px !important; }
+            .logo { font-size: 1.4rem !important; }
+            nav { display: none; width: 100%; order: 3; margin-top: 1rem; }
+            nav.show { display: block; }
+            nav ul { flex-direction: column !important; gap: 0.5rem !important; }
+            nav ul li { width: 100%; text-align: center; }
+            nav ul li a { display: block; padding: 0.75rem !important; background: rgba(255, 255, 255, 0.1); border-radius: 5px; }
+            .mobile-menu-toggle { display: block; }
+            .auth-buttons { gap: 0.5rem !important; }
+            .auth-buttons .btn { padding: 0.5rem 0.8rem !important; font-size: 0.85rem !important; }
+            .container, section { padding: 1.5rem 15px !important; }
+            .modal-content { width: 95% !important; max-width: 95% !important; margin: 1rem auto !important; padding: 1.5rem !important; }
+            .form-control { font-size: 14px !important; }
+            .btn { padding: 0.7rem 1.5rem !important; font-size: 0.9rem !important; }
+            table { font-size: 0.85rem !important; }
+            th, td { padding: 0.5rem !important; }
+            h1 { font-size: 1.8rem !important; }
+            h2 { font-size: 1.5rem !important; }
+            h3 { font-size: 1.2rem !important; }
+        }
+
+        @media (max-width: 480px) {
+            .logo { font-size: 1.2rem !important; }
+            h1 { font-size: 1.5rem !important; }
+            h2 { font-size: 1.3rem !important; }
+            .btn { padding: 0.6rem 1.2rem !important; font-size: 0.85rem !important; }
+            .form-control { font-size: 13px !important; padding: 0.6rem !important; }
+            .modal-content { padding: 1rem !important; }
+            table { font-size: 0.75rem !important; }
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .btn, button, a, input, select, textarea { min-height: 44px; }
+        }
     </style>
 </head>
 <body>
@@ -585,7 +721,8 @@
     <header>
         <div class="nav-container">
             <div class="logo">Fine<span>Graphics</span></div>
-            <nav>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">☰</button>
+            <nav id="mobileNav">
                 <ul>
                     <li><a href="index.html">Home</a></li>
                     <li><a href="index.html#designs">Designs</a></li>
@@ -614,7 +751,7 @@
         <p>Professional Graphic Design Services</p>
     </footer>
 
-    <!-- Design Customization Modal -->
+    <!-- Design Customization Modal - UPDATED WITH NEW OPTIONS (Same as index.html) -->
     <div id="customizationModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -623,6 +760,67 @@
             </div>
             <div class="modal-body">
                 <form id="customizationForm" onsubmit="handleCustomizationSubmit(event)">
+                    <!-- New Options Grid -->
+                    <div class="customization-options-grid">
+                        <!-- Gender Selection -->
+                        <div class="option-group">
+                            <label for="gender">Gender <span class="customization-required">*</span></label>
+                            <div class="radio-group" id="genderOptions">
+                                <div class="radio-option">
+                                    <input type="radio" id="male" name="gender" value="male" required>
+                                    <label for="male">Male</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="female" name="gender" value="female" required>
+                                    <label for="female">Female</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Color Selection - DROPDOWN -->
+                        <div class="option-group">
+                            <label for="tshirtColor">T-Shirt Color <span class="customization-required">*</span></label>
+                            <select id="tshirtColor" class="form-control color-dropdown" required>
+                                <option value="">Select Color</option>
+                                <option value="black" style="color: #000000; background: #f8f9fa;">⬤ Black</option>
+                                <option value="white" style="color: #000000; background: #ffffff; border: 1px solid #ddd;">⬤ White</option>
+                                <option value="blue" style="color: #007bff; background: #f8f9fa;">⬤ Blue</option>
+                                <option value="red" style="color: #dc3545; background: #f8f9fa;">⬤ Red</option>
+                                <option value="green" style="color: #28a745; background: #f8f9fa;">⬤ Green</option>
+                                <option value="yellow" style="color: #ffc107; background: #f8f9fa;">⬤ Yellow</option>
+                                <option value="maroon" style="color: #800000; background: #f8f9fa;">⬤ Maroon</option>
+                                <option value="navy" style="color: #000080; background: #f8f9fa;">⬤ Navy</option>
+                            </select>
+                        </div>
+
+                        <!-- Size Selection -->
+                        <div class="option-group">
+                            <label for="tshirtSize">Size <span class="customization-required">*</span></label>
+                            <div class="size-options" id="sizeOptions">
+                                <div class="size-option" data-size="S" onclick="selectSize(this)">S</div>
+                                <div class="size-option" data-size="M" onclick="selectSize(this)">M</div>
+                                <div class="size-option" data-size="L" onclick="selectSize(this)">L</div>
+                                <div class="size-option" data-size="XL" onclick="selectSize(this)">XL</div>
+                                <div class="size-option" data-size="2XL" onclick="selectSize(this)">2XL</div>
+                                <div class="size-option" data-size="3XL" onclick="selectSize(this)">3XL</div>
+                            </div>
+                            <input type="hidden" id="selectedSize" name="tshirtSize" value="M" required>
+                        </div>
+
+                        <!-- T-Shirt Type Selection - DROPDOWN -->
+                        <div class="option-group">
+                            <label for="tshirtType">T-Shirt Type <span class="customization-required">*</span></label>
+                            <select id="tshirtType" class="form-control" required>
+                                <option value="">Select Type</option>
+                                <option value="round-neck">Round Neck</option>
+                                <option value="collar">Collar</option>
+                                <option value="v-neck">V-Neck</option>
+                                <option value="polo">Polo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Existing Design Customization Fields -->
                     <div class="customization-form-grid">
                         <div class="form-group">
                             <label for="designSide">Design Side <span class="customization-required">*</span></label>
@@ -638,9 +836,13 @@
                             <select id="placementPosition" class="form-control" required>
                                 <option value="">Select Position</option>
                                 <option value="LEFT TOP">LEFT TOP</option>
+                                <option value="LEFT CENTER">LEFT CENTER</option>
                                 <option value="LEFT BOTTOM">LEFT BOTTOM</option>
-                                <option value="MIDDLE">MIDDLE</option>
+                                <option value="CENTER TOP">CENTER TOP</option>
+                                <option value="CENTER">CENTER</option>
+                                <option value="CENTER BOTTOM">CENTER BOTTOM</option>
                                 <option value="RIGHT TOP">RIGHT TOP</option>
+                                <option value="RIGHT CENTER">RIGHT CENTER</option>
                                 <option value="RIGHT BOTTOM">RIGHT BOTTOM</option>
                             </select>
                         </div>
@@ -663,11 +865,15 @@
                     
                     <div class="customization-preview">
                         <h4>Customization Summary</h4>
+                        <p id="previewGender">Gender: Not selected</p>
+                        <p id="previewColor">Color: Not selected</p>
+                        <p id="previewSize">Size: M</p>
+                        <p id="previewTshirtType">T-Shirt Type: Not selected</p>
                         <p id="previewSide">Side: Not selected</p>
                         <p id="previewPosition">Position: Not selected</p>
-                        <p id="previewSize">Size: Not specified</p>
-                        <!-- Price will be dynamically inserted here -->
+                        <p id="previewDesignSize">Design Size: Not specified</p>
                         <p id="previewRequirements">Requirements: None</p>
+                        <p id="previewPrice" class="price-preview">Price: Enter dimensions to calculate</p>
                     </div>
                     
                     <div class="form-actions">
@@ -727,56 +933,56 @@
         let cart = [];
         let currentCustomizationDesign = null; // Store design being customized
 
-        // Initialize the application
         // Initialize the application - UPDATED to properly load cart
-async function initApp() {
-    await checkLoginStatus();
-    
-    // Load cart from storage FIRST
-    loadCartFromStorage();
-    
-    // Then load wishlist
-    await loadWishlist();
-    
-    updateAuthButtons();
-    
-    // Sync with database to get latest data
-    await syncUserData();
-}
-
-// Sync user data from database - NEW FUNCTION
-async function syncUserData() {
-    if (!currentUser) return;
-
-    try {
-        console.log('🔄 Syncing user data from database...');
-        
-        const response = await fetch(`/getUserData/${currentUser.username}`);
-        const result = await response.json();
-
-        if (result.success) {
-            console.log(`🔄 Database data - Cart: ${result.cart?.length || 0}, Wishlist: ${result.wishlist?.length || 0}`);
+        async function initApp() {
+            await checkLoginStatus();
             
-            // Only update cart if database has items and we don't have local items
-            if (result.cart && result.cart.length > 0 && cart.length === 0) {
-                cart = result.cart;
-                console.log('✅ Cart updated from database');
-            }
+            // Load cart from storage FIRST
+            loadCartFromStorage();
             
-            // Update wishlist from database
-            if (result.wishlist && result.wishlist.length > 0) {
-                wishlist = result.wishlist;
-                console.log('✅ Wishlist updated from database');
-            }
-
-            saveCartToStorage();
-            updateCartBadges();
-            console.log(`✅ Sync complete - Cart: ${cart.length}, Wishlist: ${wishlist.length}`);
+            // Then load wishlist
+            await loadWishlist();
+            
+            updateAuthButtons();
+            
+            // Sync with database to get latest data
+            await syncUserData();
         }
-    } catch (error) {
-        console.error('Error syncing user data:', error);
-    }
-}
+
+        // Sync user data from database - NEW FUNCTION
+        async function syncUserData() {
+            if (!currentUser) return;
+
+            try {
+                console.log('🔄 Syncing user data from database...');
+                
+                const response = await fetch(`/getUserData/${currentUser.username}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    console.log(`🔄 Database data - Cart: ${result.cart?.length || 0}, Wishlist: ${result.wishlist?.length || 0}`);
+                    
+                    // Only update cart if database has items and we don't have local items
+                    if (result.cart && result.cart.length > 0 && cart.length === 0) {
+                        cart = result.cart;
+                        console.log('✅ Cart updated from database');
+                    }
+                    
+                    // Update wishlist from database
+                    if (result.wishlist && result.wishlist.length > 0) {
+                        wishlist = result.wishlist;
+                        console.log('✅ Wishlist updated from database');
+                    }
+
+                    saveCartToStorage();
+                    updateCartBadges();
+                    console.log(`✅ Sync complete - Cart: ${cart.length}, Wishlist: ${wishlist.length}`);
+                }
+            } catch (error) {
+                console.error('Error syncing user data:', error);
+            }
+        }
+
         // Check if user is logged in
         async function checkLoginStatus() {
             const userData = localStorage.getItem('currentUser');
@@ -943,7 +1149,143 @@ async function syncUserData() {
             }
         }
 
-        // Customization Modal Functions
+        // Size selection function
+        function selectSize(element) {
+            document.querySelectorAll('.size-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            const size = element.getAttribute('data-size');
+            document.getElementById('selectedSize').value = size;
+            updateCustomizationPreview();
+        }
+
+        // Update the customization preview function to include new options
+        function updateCustomizationPreview() {
+            const gender = document.querySelector('input[name="gender"]:checked');
+            const color = document.getElementById('tshirtColor').value;
+            const size = document.getElementById('selectedSize').value;
+            const tshirtType = document.getElementById('tshirtType').value;
+            const designSide = document.getElementById('designSide').value;
+            const placementPosition = document.getElementById('placementPosition').value;
+            const width = parseInt(document.getElementById('designWidth').value) || 0;
+            const height = parseInt(document.getElementById('designHeight').value) || 0;
+            const customRequirements = document.getElementById('customRequirements').value;
+            const calculatedPrice = width * height * 10;
+            
+            // Format display names
+            const colorDisplay = color ? color.charAt(0).toUpperCase() + color.slice(1) : 'Not selected';
+            const tshirtTypeDisplay = tshirtType ? 
+                tshirtType.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 
+                'Not selected';
+            
+            // Update preview text
+            document.getElementById('previewGender').textContent = `Gender: ${gender ? gender.value : 'Not selected'}`;
+            document.getElementById('previewColor').textContent = `Color: ${colorDisplay}`;
+            document.getElementById('previewSize').textContent = `Size: ${size}`;
+            document.getElementById('previewTshirtType').textContent = `T-Shirt Type: ${tshirtTypeDisplay}`;
+            document.getElementById('previewSide').textContent = `Side: ${designSide || 'Not selected'}`;
+            document.getElementById('previewPosition').textContent = `Position: ${placementPosition || 'Not selected'}`;
+            document.getElementById('previewDesignSize').textContent = `Design Size: ${width && height ? `${width}cm × ${height}cm` : 'Not specified'}`;
+            document.getElementById('previewRequirements').textContent = `Requirements: ${customRequirements || 'None'}`;
+            
+            // Update price
+            const priceElement = document.getElementById('previewPrice');
+            if (width > 0 && height > 0) {
+                priceElement.textContent = `Calculated Price: ₹${calculatedPrice}`;
+                priceElement.style.color = '#28a745';
+            } else {
+                priceElement.textContent = 'Price: Enter dimensions to calculate';
+                priceElement.style.color = '#dc3545';
+            }
+        }
+
+        // Update the handleCustomizationSubmit function to include new fields
+        function handleCustomizationSubmit(event) {
+            event.preventDefault();
+            
+            if (!currentCustomizationDesign) {
+                showNotification('No design selected for customization', 'remove');
+                return;
+            }
+
+            // Get all form values including new dropdowns
+            const gender = document.querySelector('input[name="gender"]:checked');
+            const tshirtColor = document.getElementById('tshirtColor').value;
+            const tshirtSize = document.getElementById('selectedSize').value;
+            const tshirtType = document.getElementById('tshirtType').value;
+            const designSide = document.getElementById('designSide').value;
+            const placementPosition = document.getElementById('placementPosition').value;
+            const designWidth = parseInt(document.getElementById('designWidth').value) || 0;
+            const designHeight = parseInt(document.getElementById('designHeight').value) || 0;
+            const customRequirements = document.getElementById('customRequirements').value.trim();
+
+            // Validation for all required fields
+            if (!gender) {
+                showNotification('Please select gender', 'remove');
+                return;
+            }
+
+            if (!tshirtColor) {
+                showNotification('Please select t-shirt color', 'remove');
+                return;
+            }
+
+            if (!tshirtSize) {
+                showNotification('Please select size', 'remove');
+                return;
+            }
+
+            if (!tshirtType) {
+                showNotification('Please select t-shirt type', 'remove');
+                return;
+            }
+
+            // Existing validation
+            if (!designSide) {
+                showNotification('Please select design side', 'remove');
+                return;
+            }
+
+            if (!placementPosition) {
+                showNotification('Please select placement position', 'remove');
+                return;
+            }
+
+            if (designWidth <= 0 || designHeight <= 0) {
+                showNotification('Please enter valid dimensions (greater than 0)', 'remove');
+                return;
+            }
+
+            // Calculate price
+            const calculatedPrice = designWidth * designHeight * 10;
+            
+            // Show price confirmation
+            if (!confirm(`Price for ${designWidth}cm × ${designHeight}cm design: ₹${calculatedPrice}\n\nClick OK to add to cart.`)) {
+                return;
+            }
+
+            // Add to cart with all customization data
+            addToCartWithCustomization(
+                currentCustomizationDesign.name,
+                calculatedPrice,
+                currentCustomizationDesign.image,
+                designSide,
+                placementPosition,
+                designWidth,
+                designHeight,
+                customRequirements,
+                gender.value,
+                tshirtColor,
+                tshirtSize,
+                tshirtType
+            );
+
+            // Close modal
+            closeCustomizationModal();
+        }
+
+        // Update the openCustomizationModal function to reset all fields
         function openCustomizationModal(designName, price, image) {
             if (!currentUser) {
                 showLoginRequired();
@@ -962,8 +1304,26 @@ async function syncUserData() {
                 image: image
             };
 
-            // Reset form
+            // Reset form completely
             document.getElementById('customizationForm').reset();
+            
+            // Reset specific fields
+            document.querySelectorAll('input[name="gender"]').forEach(radio => {
+                radio.checked = false;
+            });
+            
+            document.getElementById('tshirtColor').value = '';
+            document.getElementById('tshirtType').value = '';
+            
+            // Reset size selection to default (M)
+            document.querySelectorAll('.size-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelector('.size-option[data-size="M"]').classList.add('selected');
+            document.getElementById('selectedSize').value = 'M';
+            
+            document.getElementById('designSide').value = '';
+            document.getElementById('placementPosition').value = '';
             document.getElementById('designWidth').value = '';
             document.getElementById('designHeight').value = '';
             document.getElementById('customRequirements').value = '';
@@ -974,155 +1334,129 @@ async function syncUserData() {
             // Show modal
             const modal = document.getElementById('customizationModal');
             modal.style.display = 'flex';
+            
+            // Update preview
+            updateCustomizationPreview();
         }
 
         function closeCustomizationModal() {
             const modal = document.getElementById('customizationModal');
             modal.style.display = 'none';
             currentCustomizationDesign = null;
+            
+            // Reset form fields
+            document.querySelectorAll('input[name="gender"]').forEach(radio => {
+                radio.checked = false;
+            });
+            
+            // Reset dropdowns
+            document.getElementById('tshirtColor').value = '';
+            document.getElementById('tshirtType').value = '';
+            
+            // Reset size buttons
+            document.querySelectorAll('.size-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelector('.size-option[data-size="M"]').classList.add('selected');
+            document.getElementById('selectedSize').value = 'M';
+            
+            // Reset other fields
+            document.getElementById('designSide').value = '';
+            document.getElementById('placementPosition').value = '';
+            document.getElementById('designWidth').value = '';
+            document.getElementById('designHeight').value = '';
+            document.getElementById('customRequirements').value = '';
         }
 
-        function handleCustomizationSubmit(event) {
-            event.preventDefault();
+        // Update the addToCartWithCustomization function to include new fields
+        async function addToCartWithCustomization(designName, price, image, designSide, placementPosition, designWidth, designHeight, customRequirements, gender, tshirtColor, tshirtSize, tshirtType) {
+            if (!currentUser) {
+                showLoginRequired();
+                return;
+            }
             
-            if (!currentCustomizationDesign) {
-                showNotification('No design selected for customization', 'remove');
+            if (!isProfileComplete()) {
+                showProfileRequired();
                 return;
             }
 
-            // Get form values
-            const designSide = document.getElementById('designSide').value;
-            const placementPosition = document.getElementById('placementPosition').value;
-            const designWidth = parseInt(document.getElementById('designWidth').value) || 0;
-            const designHeight = parseInt(document.getElementById('designHeight').value) || 0;
-            const customRequirements = document.getElementById('customRequirements').value.trim();
+            console.log('🎯 Adding to cart from wishlist with customization:', {
+                designName, price, image, designSide, placementPosition, designWidth, designHeight, customRequirements, gender, tshirtColor, tshirtSize, tshirtType
+            });
 
-            // Validation
-            if (!designSide) {
-                showNotification('Please select design side', 'remove');
-                return;
-            }
-
-            if (!placementPosition) {
-                showNotification('Please select placement position', 'remove');
-                return;
-            }
-
-            if (designWidth <= 0 || designHeight <= 0) {
-                showNotification('Please enter valid dimensions (greater than 0)', 'remove');
-                return;
-            }
-
-            // Calculate price based on dimensions: width × height × 10
-            const calculatedPrice = designWidth * designHeight * 10;
+            const existingItemIndex = cart.findIndex(item => item.name === designName);
             
-            // Show price confirmation
-            if (!confirm(`Price for ${designWidth}cm × ${designHeight}cm design: ₹${calculatedPrice}\n\nClick OK to add to cart.`)) {
-                return;
+            if (existingItemIndex !== -1) {
+                // Item already in cart - REMOVE it
+                cart.splice(existingItemIndex, 1);
+                showNotification(`🗑️ ${designName} removed from cart!`, 'remove');
+            } else {
+                // Item not in cart - ADD it with customization
+                const cartItem = {
+                    name: designName,
+                    price: parseFloat(price),
+                    quantity: 1,
+                    image: image,
+                    placement_position: placementPosition,
+                    design_side: designSide,
+                    design_width: parseInt(designWidth),
+                    design_height: parseInt(designHeight),
+                    custom_requirements: customRequirements,
+                    gender: gender,
+                    tshirt_color: tshirtColor,
+                    tshirt_size: tshirtSize,
+                    tshirt_type: tshirtType,
+                    calculated_price: parseFloat(price)
+                };
+                
+                console.log('🛒 Cart item being added from wishlist:', cartItem);
+                cart.push(cartItem);
+                showNotification(`✅ ${designName} added to cart! Price: ₹${price}`, 'success');
             }
 
-            // Add to cart with customization and calculated price
-            addToCartWithCustomization(
-                currentCustomizationDesign.name,
-                calculatedPrice, // Use calculated price instead of original price
-                currentCustomizationDesign.image,
-                designSide,
-                placementPosition,
-                designWidth,
-                designHeight,
-                customRequirements
-            );
-
-            // Close modal
-            closeCustomizationModal();
-        }
-
-        // Add to cart with customization data - UPDATED with calculated price
-        // Add to cart with customization data - FIXED VERSION
-async function addToCartWithCustomization(designName, price, image, designSide, placementPosition, designWidth, designHeight, customRequirements) {
-    if (!currentUser) {
-        showLoginRequired();
-        return;
-    }
-    
-    if (!isProfileComplete()) {
-        showProfileRequired();
-        return;
-    }
-
-    console.log('🎯 Adding to cart from wishlist:', {
-        designName, price, image, designSide, placementPosition, designWidth, designHeight, customRequirements
-    });
-
-    const existingItemIndex = cart.findIndex(item => item.name === designName);
-    
-    if (existingItemIndex !== -1) {
-        // Item already in cart - REMOVE it
-        cart.splice(existingItemIndex, 1);
-        showNotification(`🗑️ ${designName} removed from cart!`, 'remove');
-    } else {
-        // Item not in cart - ADD it with customization
-        const cartItem = {
-            name: designName,
-            price: parseFloat(price), // This is now the calculated price
-            quantity: 1,
-            image: image,
-            placement_position: placementPosition,
-            design_side: designSide,
-            design_width: parseInt(designWidth),
-            design_height: parseInt(designHeight),
-            custom_requirements: customRequirements,
-            calculated_price: parseFloat(price) // Store for reference
-        };
-        
-        console.log('🛒 Cart item being added:', cartItem);
-        cart.push(cartItem);
-        showNotification(`✅ ${designName} added to cart! Price: ₹${price}`, 'success');
-    }
-
-    // Save and sync
-    saveCartToStorage();
-    updateCartBadges();
-    
-    // Force sync to database and wait for completion
-    try {
-        await syncCartToDatabase();
-        console.log('🔄 Cart sync completed from wishlist');
-        
-        // Verify the cart was saved
-        await verifyCartSaved();
-    } catch (error) {
-        console.error('❌ Error syncing cart:', error);
-        showNotification('❌ Failed to sync cart with server', 'remove');
-    }
-    
-    // Reload wishlist to update button states
-    loadWishlist();
-}
-
-// Verify cart was saved to database
-async function verifyCartSaved() {
-    if (!currentUser) return;
-    
-    try {
-        const response = await fetch(`/getUserData/${currentUser.username}`);
-        const result = await response.json();
-        
-        if (result.success) {
-            const dbCartCount = result.cart?.length || 0;
-            const localCartCount = cart.length;
-            console.log(`✅ Cart verification - Database: ${dbCartCount} items, Local: ${localCartCount} items`);
+            // Save and sync
+            saveCartToStorage();
+            updateCartBadges();
             
-            if (dbCartCount !== localCartCount) {
-                console.warn('⚠️ Cart count mismatch between local and database');
-                // If there's a mismatch, sync local to database again
+            // Force sync to database and wait for completion
+            try {
                 await syncCartToDatabase();
+                console.log('🔄 Cart sync completed from wishlist');
+                
+                // Verify the cart was saved
+                await verifyCartSaved();
+            } catch (error) {
+                console.error('❌ Error syncing cart:', error);
+                showNotification('❌ Failed to sync cart with server', 'remove');
+            }
+            
+            // Reload wishlist to update button states
+            loadWishlist();
+        }
+
+        // Verify cart was saved to database
+        async function verifyCartSaved() {
+            if (!currentUser) return;
+            
+            try {
+                const response = await fetch(`/getUserData/${currentUser.username}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const dbCartCount = result.cart?.length || 0;
+                    const localCartCount = cart.length;
+                    console.log(`✅ Cart verification - Database: ${dbCartCount} items, Local: ${localCartCount} items`);
+                    
+                    if (dbCartCount !== localCartCount) {
+                        console.warn('⚠️ Cart count mismatch between local and database');
+                        // If there's a mismatch, sync local to database again
+                        await syncCartToDatabase();
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Cart verification failed:', error);
             }
         }
-    } catch (error) {
-        console.error('❌ Cart verification failed:', error);
-    }
-}
 
         // Remove item from cart function
         function removeFromCart(designName) {
@@ -1163,48 +1497,47 @@ async function verifyCartSaved() {
             }
         }
 
-        // Sync cart to database
         // Sync cart to database - IMPROVED VERSION
-async function syncCartToDatabase() {
-    if (!currentUser) {
-        console.log('❌ No user logged in, cannot sync cart');
-        return { success: false, message: 'No user logged in' };
-    }
+        async function syncCartToDatabase() {
+            if (!currentUser) {
+                console.log('❌ No user logged in, cannot sync cart');
+                return { success: false, message: 'No user logged in' };
+            }
 
-    try {
-        console.log('🔄 Syncing cart to database from wishlist:', cart);
-        
-        const response = await fetch('/syncUserData', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                username: currentUser.username,
-                cart: cart,
-                wishlist: null // Skip wishlist sync
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            try {
+                console.log('🔄 Syncing cart to database from wishlist:', cart);
+                
+                const response = await fetch('/syncUserData', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        cart: cart,
+                        wishlist: null // Skip wishlist sync
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log("✅ Cart sync response from wishlist:", result);
+                
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to sync cart');
+                }
+                
+                return result;
+            } catch (error) {
+                console.error('❌ Error syncing cart to database from wishlist:', error);
+                showNotification('❌ Failed to save cart to server', 'remove');
+                throw error;
+            }
         }
-        
-        const result = await response.json();
-        console.log("✅ Cart sync response from wishlist:", result);
-        
-        if (!result.success) {
-            throw new Error(result.message || 'Failed to sync cart');
-        }
-        
-        return result;
-    } catch (error) {
-        console.error('❌ Error syncing cart to database from wishlist:', error);
-        showNotification('❌ Failed to save cart to server', 'remove');
-        throw error;
-    }
-}
 
         // Remove item from wishlist - FIXED to work correctly
         async function removeFromWishlist(designName) {
@@ -1257,27 +1590,26 @@ async function syncCartToDatabase() {
             }
         }
 
-        // Load cart from local storage
         // Load cart from local storage - IMPROVED VERSION
-function loadCartFromStorage() {
-    if (currentUser) {
-        const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
-        if (savedCart) {
-            try {
-                cart = JSON.parse(savedCart);
-                console.log(`📦 Loaded ${cart.length} cart items from localStorage`);
-            } catch (e) {
-                console.error('Error parsing cart from localStorage:', e);
+        function loadCartFromStorage() {
+            if (currentUser) {
+                const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
+                if (savedCart) {
+                    try {
+                        cart = JSON.parse(savedCart);
+                        console.log(`📦 Loaded ${cart.length} cart items from localStorage`);
+                    } catch (e) {
+                        console.error('Error parsing cart from localStorage:', e);
+                        cart = [];
+                    }
+                } else {
+                    console.log('📦 No cart found in localStorage');
+                    cart = [];
+                }
+            } else {
                 cart = [];
             }
-        } else {
-            console.log('📦 No cart found in localStorage');
-            cart = [];
         }
-    } else {
-        cart = [];
-    }
-}
 
         // Update authentication buttons
         function updateAuthButtons() {
@@ -1472,53 +1804,66 @@ function loadCartFromStorage() {
             }
         }
 
-        // Real-time preview updates with price calculation
+        // Add event listeners for real-time updates
         document.addEventListener('DOMContentLoaded', function() {
-            // Update preview when form fields change
-            const updatePreview = () => {
-                const side = document.getElementById('designSide').value || 'Not selected';
-                const position = document.getElementById('placementPosition').value || 'Not selected';
-                const width = document.getElementById('designWidth').value || '';
-                const height = document.getElementById('designHeight').value || '';
-                const requirements = document.getElementById('customRequirements').value || 'None';
-                
-                // Calculate price if dimensions are provided
-                let priceText = 'Not calculated';
-                if (width && height) {
-                    const calculatedPrice = parseInt(width) * parseInt(height) * 10;
-                    priceText = `₹${calculatedPrice}`;
-                }
-                
-                document.getElementById('previewSide').textContent = `Side: ${side}`;
-                document.getElementById('previewPosition').textContent = `Position: ${position}`;
-                document.getElementById('previewSize').textContent = `Size: ${width && height ? `${width}×${height} cm` : 'Not specified'}`;
-                document.getElementById('previewRequirements').textContent = `Requirements: ${requirements}`;
-                
-                // Update price in preview - create or update price element
-                let priceElement = document.getElementById('previewPrice');
-                if (!priceElement) {
-                    priceElement = document.createElement('p');
-                    priceElement.id = 'previewPrice';
-                    priceElement.className = 'price-preview';
-                    document.querySelector('.customization-preview').appendChild(priceElement);
-                }
-                priceElement.textContent = `Calculated Price: ${priceText}`;
-                priceElement.style.color = width && height ? '#28a745' : '#dc3545';
-            };
+            // Add event listeners for customization modal
+            // Gender radio buttons
+            document.querySelectorAll('input[name="gender"]').forEach(radio => {
+                radio.addEventListener('change', updateCustomizationPreview);
+            });
             
-            // Add event listeners for real-time preview
-            document.getElementById('designSide')?.addEventListener('change', updatePreview);
-            document.getElementById('placementPosition')?.addEventListener('change', updatePreview);
-            document.getElementById('designWidth')?.addEventListener('input', updatePreview);
-            document.getElementById('designHeight')?.addEventListener('input', updatePreview);
-            document.getElementById('customRequirements')?.addEventListener('input', updatePreview);
+            // New dropdowns
+            const tshirtColor = document.getElementById('tshirtColor');
+            const tshirtType = document.getElementById('tshirtType');
+            
+            if (tshirtColor) tshirtColor.addEventListener('change', updateCustomizationPreview);
+            if (tshirtType) tshirtType.addEventListener('change', updateCustomizationPreview);
+            
+            // Existing event listeners
+            const designSide = document.getElementById('designSide');
+            const placementPosition = document.getElementById('placementPosition');
+            const designWidth = document.getElementById('designWidth');
+            const designHeight = document.getElementById('designHeight');
+            const customRequirements = document.getElementById('customRequirements');
+            
+            if (designSide) designSide.addEventListener('change', updateCustomizationPreview);
+            if (placementPosition) placementPosition.addEventListener('change', updateCustomizationPreview);
+            if (designWidth) designWidth.addEventListener('input', updateCustomizationPreview);
+            if (designHeight) designHeight.addEventListener('input', updateCustomizationPreview);
+            if (customRequirements) customRequirements.addEventListener('input', updateCustomizationPreview);
             
             // Initial update
-            updatePreview();
+            updateCustomizationPreview();
         });
 
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+    <script>
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('mobileMenuToggle');
+            const nav = document.getElementById('mobileNav');
+            if (toggle && nav) {
+                toggle.addEventListener('click', function() {
+                    nav.classList.toggle('show');
+                    this.textContent = nav.classList.contains('show') ? '✕' : '☰';
+                });
+                nav.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        nav.classList.remove('show');
+                        toggle.textContent = '☰';
+                    });
+                });
+                document.addEventListener('click', function(e) {
+                    if (!nav.contains(e.target) && !toggle.contains(e.target)) {
+                        nav.classList.remove('show');
+                        toggle.textContent = '☰';
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

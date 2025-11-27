@@ -165,6 +165,53 @@
         font-size: 11px;
       }
     }
+
+        /* ========== MOBILE RESPONSIVE STYLES ========== */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-container { flex-wrap: wrap; padding: 0 15px !important; }
+            .logo { font-size: 1.4rem !important; }
+            nav { display: none; width: 100%; order: 3; margin-top: 1rem; }
+            nav.show { display: block; }
+            nav ul { flex-direction: column !important; gap: 0.5rem !important; }
+            nav ul li { width: 100%; text-align: center; }
+            nav ul li a { display: block; padding: 0.75rem !important; background: rgba(255, 255, 255, 0.1); border-radius: 5px; }
+            .mobile-menu-toggle { display: block; }
+            .auth-buttons { gap: 0.5rem !important; }
+            .auth-buttons .btn { padding: 0.5rem 0.8rem !important; font-size: 0.85rem !important; }
+            .container, section { padding: 1.5rem 15px !important; }
+            .modal-content { width: 95% !important; max-width: 95% !important; margin: 1rem auto !important; padding: 1.5rem !important; }
+            .form-control { font-size: 14px !important; }
+            .btn { padding: 0.7rem 1.5rem !important; font-size: 0.9rem !important; }
+            table { font-size: 0.85rem !important; }
+            th, td { padding: 0.5rem !important; }
+            h1 { font-size: 1.8rem !important; }
+            h2 { font-size: 1.5rem !important; }
+            h3 { font-size: 1.2rem !important; }
+        }
+
+        @media (max-width: 480px) {
+            .logo { font-size: 1.2rem !important; }
+            h1 { font-size: 1.5rem !important; }
+            h2 { font-size: 1.3rem !important; }
+            .btn { padding: 0.6rem 1.2rem !important; font-size: 0.85rem !important; }
+            .form-control { font-size: 13px !important; padding: 0.6rem !important; }
+            .modal-content { padding: 1rem !important; }
+            table { font-size: 0.75rem !important; }
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .btn, button, a, input, select, textarea { min-height: 44px; }
+        }
   </style>
 </head>
 <body>
@@ -412,4 +459,28 @@
     loadCustomerOrders();
   </script>
 </body>
-</html>
+</html><script>
+// Mobile menu toggle
+document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.getElementById('mobileMenuToggle');
+    const nav = document.getElementById('mobileNav');
+    if (toggle && nav) {
+        toggle.addEventListener('click', function() {
+            nav.classList.toggle('show');
+            this.textContent = nav.classList.contains('show') ? '✕' : '☰';
+        });
+        nav.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                nav.classList.remove('show');
+                toggle.textContent = '☰';
+            });
+        });
+        document.addEventListener('click', function(e) {
+            if (!nav.contains(e.target) && !toggle.contains(e.target)) {
+                nav.classList.remove('show');
+                toggle.textContent = '☰';
+            }
+        });
+    }
+});
+</script>

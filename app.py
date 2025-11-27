@@ -11,8 +11,6 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Use different database filenames to avoid locks
-
 # Use /tmp so Render allows writing
 DB_PATH = "/tmp"
 
@@ -108,7 +106,7 @@ def init_orders_db():
             # Orders table - UPDATED WITH order_id
             cur.execute("""CREATE TABLE IF NOT EXISTS orders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                order_id TEXT,  # ADD THIS LINE
+                order_id TEXT,  
                 username TEXT,
                 design_name TEXT,
                 price REAL,
